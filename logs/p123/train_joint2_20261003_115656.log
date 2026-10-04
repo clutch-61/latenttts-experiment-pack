@@ -1,0 +1,9 @@
+DEVICES student=cuda:0 frozen(teacher/O2/B0)=cuda:1
+PACK k=64 (req 64) grad_accum=8 frozen_dtype=bf16 vram={'free_gb': 92.008153088, 'total_gb': 102.085492736, 'alloc_gb': 0.510357504, 'reserved_gb': 0.517996544, 'used_frac': 0.0987147084068124}
+P2 cache: n_ok=372 (pilot-scale; online H^pos used when missing)
+P2 MMD on: λ=0.1 bn=64 dim=768 online_Hpos=1
+TrainJSON skipped 5; usable=385615
+P123 n=385615 k=64 b0_slack=0.5 prefer_cot=True select=dual_beat sf_mode=C easy_keep=1.0 max_new_tokens=128 dropout_p=0.2 λ_lat=1.0 λ_mmd=0.1 lr=3e-06
+P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 0/1500 [00:00<?, ?it/s]The `seen_tokens` attribute is deprecated and will be removed in v4.41. Use the `cache_position` model input instead.
+BATCH q=32 k=64 seqs=2048 peak_alloc_gb=51.9 vram={'free_gb': 40.26302464, 'total_gb': 102.085492736, 'alloc_gb': 0.544308736, 'reserved_gb': 52.131004416, 'used_frac': 0.6055950403832314}
+P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 1/1500 [00:47<19:45:43, 47.46s/it]P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 1/1500 [00:47<19:45:43, 47.46s/it, agree=3, ans=0.477, left=3, src=beat_self]P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 2/1500 [00:48<8:25:55, 20.26s/it, agree=3, ans=0.477, left=3, src=beat_self] P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 2/1500 [00:48<8:25:55, 20.26s/it, agree=3, ans=0.188, left=4, src=beat_self]P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 3/1500 [00:49<4:48:45, 11.57s/it, agree=3, ans=0.188, left=4, src=beat_self]P123_k64_b0s0.5_dual_beat_sfC_ll1_mmd0.1:   0%|          | 3/1500 [00:49<4:48:45, 11.57s/it, agree=4, ans=0.003, left=4, src=beat_self]

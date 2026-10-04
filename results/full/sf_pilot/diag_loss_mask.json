@@ -1,0 +1,17 @@
+{
+  "n_prefix": 62,
+  "supervised": [
+    [
+      62,
+      2,
+      "#"
+    ],
+    [
+      63,
+      6200,
+      "300"
+    ]
+  ],
+  "train_target": "#300",
+  "prompt_ends_with": "John cuts his grass to 2 inches.  It grows .5 inches per month.  When it gets to 4 inches he cuts it back down to 2 inches.  It cost $100 to get his grass cut.  How much does he pay per year?\n<|start-latent|>"
+}

@@ -1,0 +1,170 @@
+[
+  {
+    "idx": 2,
+    "gold": 1400.0,
+    "pred": 1400.0,
+    "full_decode_skip_special": "Travis wants to fly to Australia. The regular tickets cost about $2000. As Travis is a student, he will get a 30% discount on this price. How much does he need to pay for his ticket?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 1400",
+    "after_end_latent_raw": "### 1400<|endoftext|>",
+    "train_target_we_used": "#1400",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      36641,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 1400",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 4,
+    "gold": 240.0,
+    "pred": 240.0,
+    "full_decode_skip_special": "Tom bought his games for $200.  They tripled in value and he then sold 40% of them.  How much did he sell the games for?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 240",
+    "after_end_latent_raw": "### 240<|endoftext|>",
+    "train_target_we_used": "#240",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      14956,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 240",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 5,
+    "gold": 20.0,
+    "pred": 20.0,
+    "full_decode_skip_special": "Maggie went to Lou's aquarium and saw 100 goldfish in the aquarium. She asked if she could take some home to care for, and she was allowed to catch half of them. While using a catching net, she caught 3/5 of the total number of goldfish she was allowed to take home. How many goldfish does Maggie remain with to catch to get the total number she was allowed to take home?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 20",
+    "after_end_latent_raw": "### 20<|endoftext|>",
+    "train_target_we_used": "#20",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      1160,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 20",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 12,
+    "gold": 10.0,
+    "pred": 10.0,
+    "full_decode_skip_special": "Joshua packs 12 bottles in each crate. He has a total of 130 bottles and 10 crates. How many bottles will not be placed in a crate?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10",
+    "after_end_latent_raw": "### 10<|endoftext|>",
+    "train_target_we_used": "#10",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      838,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 10",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 13,
+    "gold": 80.0,
+    "pred": 80.0,
+    "full_decode_skip_special": "Jake amasses a fortune of 80 bitcoin.  He donates 20 bitcoins to charity.  He then gives half of all the bitcoins to his brother.  After that, he triples the number of bitcoins he has.  Then he donates another 10 coins.  How many coins does he have?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<90-10=80>>\n### 80",
+    "after_end_latent_raw": "<<90-10=80>>\n### 80<|endoftext|>",
+    "train_target_we_used": "#80",
+    "n_tokens_after_end": 11,
+    "token_ids_after_end": [
+      16791,
+      3829,
+      12,
+      940,
+      28,
+      1795,
+      4211,
+      198,
+      21017,
+      4019,
+      50256
+    ],
+    "tokens_after_end": [
+      "<<",
+      "90",
+      "-",
+      "10",
+      "=",
+      "80",
+      ">>",
+      "\n",
+      "###",
+      " 80",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 19,
+    "gold": 54.0,
+    "pred": 54.0,
+    "full_decode_skip_special": "Mitchell is trying to chew as many pieces of gum at once as he can. He has 8 packets of gum, There are 7 pieces in each. If he chews all the gum except for 2 pieces, how many pieces does he chew at once?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 54",
+    "after_end_latent_raw": "### 54<|endoftext|>",
+    "train_target_we_used": "#54",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      7175,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 54",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 25,
+    "gold": 320.0,
+    "pred": 320.0,
+    "full_decode_skip_special": "Jenna works as a truck driver. She gets paid $0.40 cents per mile. If she drives 400 miles one way, how much does she get paid for a round trip?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 320",
+    "after_end_latent_raw": "### 320<|endoftext|>",
+    "train_target_we_used": "#320",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      20959,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 320",
+      "<|endoftext|>"
+    ]
+  },
+  {
+    "idx": 29,
+    "gold": 360.0,
+    "pred": 360.0,
+    "full_decode_skip_special": "How much money did you make if you sold 220 chocolate cookies at $1 per cookie and 70 vanilla cookies at $2 per cookie?\n<|start-latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 360",
+    "after_end_latent_raw": "### 360<|endoftext|>",
+    "train_target_we_used": "#360",
+    "n_tokens_after_end": 3,
+    "token_ids_after_end": [
+      21017,
+      11470,
+      50256
+    ],
+    "tokens_after_end": [
+      "###",
+      " 360",
+      "<|endoftext|>"
+    ]
+  }
+]

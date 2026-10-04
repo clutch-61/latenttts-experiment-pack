@@ -1,0 +1,30 @@
+TRAIN_DIED
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_sf_o2_beat_teacher.py", line 444, in <module>
+    main()
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_sf_o2_beat_teacher.py", line 270, in main
+    prm = load_o2(device, prm_id, tok)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_sf_o2_beat_teacher.py", line 113, in load_o2
+    ).to(device)
+      ^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/modeling_utils.py", line 3851, in to
+    return super().to(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1369, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  [Previous line repeated 2 more times]
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 955, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1355, in convert
+    return t.to(
+           ^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 95.07 GiB of which 1.88 MiB is free. Process 161320 has 93.46 GiB memory in use. Including non-PyTorch memory, this process has 1.59 GiB memory in use. Of the allocated memory 1.20 GiB is allocated by PyTorch, and 84.91 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

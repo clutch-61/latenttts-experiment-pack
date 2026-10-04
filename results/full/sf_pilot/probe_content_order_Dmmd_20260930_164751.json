@@ -1,0 +1,9 @@
+{
+  "n": 2232,
+  "L": 6,
+  "chance": 0.16666666666666666,
+  "probe_acc_content_view": 0.8297491073608398,
+  "probe_acc_raw_latent": 0.9879032373428345,
+  "projector_path": "outputs/sf_pilot_Dmmd_20260930_164751/content_projector.pt",
+  "claim": "NOT position-free"
+}

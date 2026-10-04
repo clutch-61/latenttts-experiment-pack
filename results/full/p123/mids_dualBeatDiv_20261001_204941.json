@@ -1,0 +1,58 @@
+{
+  "system_o2": {
+    "acc": 0.34040940106141016,
+    "cov": 0.5094768764215315,
+    "leftover_rate": 0.16906747536012132,
+    "o2_pick_fail_given_pool": 0.3318452380952381
+  },
+  "system_b0": {
+    "acc": 0.3290371493555724,
+    "cov": 0.5094768764215315,
+    "leftover_rate": 0.18043972706595907,
+    "o2_pick_fail_given_pool": 0.3541666666666667
+  },
+  "baseline_a_b0_acc": 0.3373768006065201,
+  "gen_only": {
+    "acc": 0.34765625,
+    "cov": null
+  },
+  "pilot_o2": {
+    "acc": 0.34375,
+    "cov": 0.40625,
+    "leftover_rate": 0.0625,
+    "o2_pick_fail_given_pool": 0.15384615384615385
+  },
+  "mids": {
+    "system_acc_o2_pct": 34.04,
+    "system_cov_pct": 50.95,
+    "leftover_pp": 16.91,
+    "pick_fail_given_pool_pct": 33.18,
+    "health_acc_b0_pct": 32.9,
+    "delta_vs_A_B0_pp": 0.3,
+    "target_plus10_acc_pct": 43.74,
+    "gap_to_plus10_pp": 9.7,
+    "pilot_o2_acc_pct": 34.38,
+    "transfer_gap_pp": 0.33,
+    "gen_first_pct": 34.77,
+    "gen_cov_pct": null
+  },
+  "train_mid_last": {
+    "step": 1500,
+    "n": 50,
+    "pool_ok_rate": 0.8,
+    "leftover_rate": 0.36,
+    "o2_top_ok_rate": 0.44,
+    "o2_b0_agree": 0.36,
+    "hash3_rate": 0.8495833333333332,
+    "cot_rate": 0.15041666666666667,
+    "mean_unique": 11.92,
+    "mean_alen": 9.800833333333333,
+    "sources": {
+      "teacher": 10234,
+      "beat_self": 1766
+    },
+    "skips": {
+      "no_signal": 4973
+    }
+  }
+}

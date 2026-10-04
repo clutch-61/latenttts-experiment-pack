@@ -1,0 +1,18 @@
+TRAIN_DONE
+DONE steps=3000 attempts=4089 sources={'beat_self': 717, 'teacher': 1903, 'self_teacher_wrong': 380} skips={'no_correct': 738, 'low_margin': 351} out=outputs/sf_full_O2beatT_k8_b0.5_20260930_235112
+ALL_EVAL_DONE
+STATS {'updates': 3000, 'attempts': 4089, 'skips': {'no_correct': 738, 'low_margin': 351}, 'sources': {'beat_self': 717, 'teacher': 1903, 'self_teacher_wrong': 380}, 'update_rate': 0.7336757153338225, 'self_rate': 0.36566666666666664, 'recipe': 'o2_beat_teacher'}
+gates Counter({'update': 3000, 'no_correct': 738, 'low_margin': 351})
+sources Counter({'teacher': 1903, 'beat_self': 717, 'self_teacher_wrong': 380})
+  tlen[beat_self] mean=3.81 n=717
+  tlen[self_teacher_wrong] mean=8.00 n=380
+  tlen[teacher] mean=4.64 n=1903
+PILOT GEN 33.01 47.27
+PILOT BON 34.77 42.19
+GSMVALID GEN 32.25 46.0
+STRUCT {'pass1': 0.32421875, 'coverage': 0.47265625, 'mean_after_len': 291.9951171875, 'starts_###': 0.7509765625}
+vsA gen-cov {'mean_pp': 1.5625, 'ci95_pp': [-3.125, 6.25]}
+O2beatT-A+O2 {'bon': (-0.39, [-4.3, 3.52]), 'cov': (0.39, [-3.52, 3.92])}
+O2beatT-gateT+O2 {'bon': (1.95, [-0.78, 5.08]), 'cov': (1.95, [-1.56, 5.47])}
+REF A 31.0/45.7 A+O2 35.2/41.8 | gatePilot 32.3/46.9 +O2 34.8/43.4 | gateT 33.5/45.7 +O2 32.8/40.2
+PIPELINE_DONE

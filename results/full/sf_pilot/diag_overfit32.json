@@ -1,0 +1,125 @@
+[
+  {
+    "style": "triple_hash",
+    "mode": "C",
+    "steps": 96,
+    "loss_first": 2.5780675411224365,
+    "loss_last": 1.0494290590286255,
+    "train_exact_32": 0.96875,
+    "format_starts_###": 1.0,
+    "samples": [
+      {
+        "after": "### 36<|endoftext|>",
+        "pred": 36.0,
+        "gold": 36.0,
+        "ok": true
+      },
+      {
+        "after": "### 1800<|endoftext|>",
+        "pred": 1800.0,
+        "gold": 1800.0,
+        "ok": true
+      },
+      {
+        "after": "### 40<|endoftext|>",
+        "pred": 40.0,
+        "gold": 3200.0,
+        "ok": false
+      },
+      {
+        "after": "### 5<|endoftext|>",
+        "pred": 5.0,
+        "gold": 5.0,
+        "ok": true
+      },
+      {
+        "after": "### 14<|endoftext|>",
+        "pred": 14.0,
+        "gold": 14.0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "style": "triple_hash",
+    "mode": "B",
+    "steps": 96,
+    "loss_first": 1.9950758218765259,
+    "loss_last": 0.29515334963798523,
+    "train_exact_32": 0.90625,
+    "format_starts_###": 1.0,
+    "samples": [
+      {
+        "after": "### 36<|endoftext|>",
+        "pred": 36.0,
+        "gold": 36.0,
+        "ok": true
+      },
+      {
+        "after": "### 1800<|endoftext|>",
+        "pred": 1800.0,
+        "gold": 1800.0,
+        "ok": true
+      },
+      {
+        "after": "### 40000<|endoftext|>",
+        "pred": 40000.0,
+        "gold": 3200.0,
+        "ok": false
+      },
+      {
+        "after": "### 5<|endoftext|>",
+        "pred": 5.0,
+        "gold": 5.0,
+        "ok": true
+      },
+      {
+        "after": "### 14<|endoftext|>",
+        "pred": 14.0,
+        "gold": 14.0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "style": "bad_hash",
+    "mode": "C",
+    "steps": 96,
+    "loss_first": 26.98495864868164,
+    "loss_last": 3.208646059036255,
+    "train_exact_32": 0.8125,
+    "format_starts_###": 0.0,
+    "samples": [
+      {
+        "after": "#26<|endoftext|>",
+        "pred": 26.0,
+        "gold": 36.0,
+        "ok": false
+      },
+      {
+        "after": "#1800<|endoftext|>",
+        "pred": 1800.0,
+        "gold": 1800.0,
+        "ok": true
+      },
+      {
+        "after": "#20000<|endoftext|>",
+        "pred": 20000.0,
+        "gold": 3200.0,
+        "ok": false
+      },
+      {
+        "after": "#5<|endoftext|>",
+        "pred": 5.0,
+        "gold": 5.0,
+        "ok": true
+      },
+      {
+        "after": "#14<|endoftext|>",
+        "pred": 14.0,
+        "gold": 14.0,
+        "ok": true
+      }
+    ]
+  }
+]

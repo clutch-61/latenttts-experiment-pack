@@ -1,0 +1,345 @@
+PACK k=64 (req 64) grad_accum=8 frozen_dtype=bf16 vram={'free_gb': 17.310220288, 'total_gb': 102.085492736, 'alloc_gb': 1.29478144, 'reserved_gb': 1.31072, 'used_frac': 0.8304340820221596}
+TrainJSON skipped 5; usable=385615
+P123 n=385615 k=64 b0_slack=0.5 prefer_cot=True select=wvote sf_mode=auto easy_keep=1.0 max_new_tokens=128 dropout_p=0.2 λ_lat=0.0 λ_mmd=0.0 lr=3e-06
+P123_k64_b0s0.5:   0%|          | 0/1500 [00:00<?, ?it/s]The `seen_tokens` attribute is deprecated and will be removed in v4.41. Use the `cache_position` model input instead.
+OOM at q_batch=16; splitting
+OOM at q_batch=8; splitting
+OOM at q_batch=4; splitting
+OOM at q_batch=2; splitting
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 192, in sample_and_score_safe
+    return sample_and_score(*args, exs=exs, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 212, in sample_and_score
+    s_seq, s_lat = generate_batch(
+                   ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 178, in generate_batch
+    out = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 338, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 535, in _sample
+    outputs = self(**model_inputs, return_dict=True, output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1233, in forward
+    lm_logits = self.lm_head(hidden_states)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 13.23 GiB. GPU 0 has a total capacity of 95.07 GiB of which 5.80 GiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 11.85 GiB memory in use. Of the allocated memory 11.35 GiB is allocated by PyTorch, and 73.55 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 192, in sample_and_score_safe
+    return sample_and_score(*args, exs=exs, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 212, in sample_and_score
+    s_seq, s_lat = generate_batch(
+                   ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 178, in generate_batch
+    out = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 338, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 535, in _sample
+    outputs = self(**model_inputs, return_dict=True, output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1233, in forward
+    lm_logits = self.lm_head(hidden_states)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 4.89 GiB. GPU 0 has a total capacity of 95.07 GiB of which 2.03 GiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 15.62 GiB memory in use. Of the allocated memory 15.08 GiB is allocated by PyTorch, and 107.94 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 192, in sample_and_score_safe
+    return sample_and_score(*args, exs=exs, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 212, in sample_and_score
+    s_seq, s_lat = generate_batch(
+                   ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 178, in generate_batch
+    out = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 338, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 535, in _sample
+    outputs = self(**model_inputs, return_dict=True, output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1210, in forward
+    transformer_outputs = self.transformer(
+                          ^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 939, in forward
+    outputs = block(
+              ^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 439, in forward
+    feed_forward_hidden_states = self.mlp(hidden_states)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 365, in forward
+    hidden_states = self.act(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/activations.py", line 47, in forward
+    return 0.5 * input * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
+                                                                               ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 154.00 MiB. GPU 0 has a total capacity of 95.07 GiB of which 102.31 MiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 17.55 GiB memory in use. Of the allocated memory 17.06 GiB is allocated by PyTorch, and 57.84 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 192, in sample_and_score_safe
+    return sample_and_score(*args, exs=exs, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 212, in sample_and_score
+    s_seq, s_lat = generate_batch(
+                   ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 178, in generate_batch
+    out = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 338, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 535, in _sample
+    outputs = self(**model_inputs, return_dict=True, output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1210, in forward
+    transformer_outputs = self.transformer(
+                          ^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 939, in forward
+    outputs = block(
+              ^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 439, in forward
+    feed_forward_hidden_states = self.mlp(hidden_states)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 365, in forward
+    hidden_states = self.act(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/activations.py", line 47, in forward
+    return 0.5 * input * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
+                                                                               ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 66.00 MiB. GPU 0 has a total capacity of 95.07 GiB of which 20.31 MiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 17.63 GiB memory in use. Of the allocated memory 17.16 GiB is allocated by PyTorch, and 41.68 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 766, in <module>
+    main()
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 589, in main
+    sample_and_score_safe(
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 199, in sample_and_score_safe
+    return sample_and_score_safe(*args, exs=exs[:mid], **kw) + sample_and_score_safe(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 199, in sample_and_score_safe
+    return sample_and_score_safe(*args, exs=exs[:mid], **kw) + sample_and_score_safe(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 199, in sample_and_score_safe
+    return sample_and_score_safe(*args, exs=exs[:mid], **kw) + sample_and_score_safe(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 192, in sample_and_score_safe
+    return sample_and_score(*args, exs=exs, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 212, in sample_and_score
+    s_seq, s_lat = generate_batch(
+                   ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/scripts/train_p123_system.py", line 178, in generate_batch
+    out = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 338, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/home/lihourun/ll/LatentTTS-main/src/generation_mixin.py", line 535, in _sample
+    outputs = self(**model_inputs, return_dict=True, output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1210, in forward
+    transformer_outputs = self.transformer(
+                          ^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 939, in forward
+    outputs = block(
+              ^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 439, in forward
+    feed_forward_hidden_states = self.mlp(hidden_states)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 365, in forward
+    hidden_states = self.act(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/activations.py", line 47, in forward
+    return 0.5 * input * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
+                                                                               ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 95.07 GiB of which 320.00 KiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 17.65 GiB memory in use. Of the allocated memory 17.19 GiB is allocated by PyTorch, and 29.18 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+P123_k64_b0s0.5:   0%|          | 0/1500 [00:02<?, ?it/s]

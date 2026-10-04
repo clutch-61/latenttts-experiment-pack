@@ -1,0 +1,159 @@
+TRAIN_DONE
+DONE steps=2000 sources={'teacher': 14957, 'beat_self': 1043} skips={'easy_drop': 3054, 'no_signal': 6809} out=outputs/p123_k16proc_20261004_003256
+{
+  "system_o2": {
+    "acc": 0.33434420015163,
+    "acc_top1": 0.3206974981046247,
+    "acc_wvote": 0.33434420015163,
+    "cov": 0.5193328278999242,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.18498862774829417,
+    "o2_pick_fail_given_pool": 0.3562043795620438
+  },
+  "system_b0": {
+    "acc": 0.3555724033358605,
+    "acc_top1": 0.3411675511751327,
+    "acc_wvote": 0.3555724033358605,
+    "cov": 0.5193328278999242,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.16376042456406367,
+    "o2_pick_fail_given_pool": 0.31532846715328466
+  },
+  "baseline_a_b0_acc": 0.3373768006065201,
+  "gen_only": {
+    "acc": 0.31640625,
+    "cov": null
+  },
+  "pilot_o2": {
+    "acc": 0.3359375,
+    "acc_top1": 0.32421875,
+    "acc_wvote": 0.3359375,
+    "cov": 0.4296875,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.09375,
+    "o2_pick_fail_given_pool": 0.21818181818181817
+  },
+  "mids": {
+    "system_acc_o2_pct": 33.43,
+    "system_acc_o2_top1_pct": 32.07,
+    "system_acc_o2_wvote_pct": 33.43,
+    "claim_agg": "wvote",
+    "system_cov_pct": 51.93,
+    "leftover_pp": 18.5,
+    "pick_fail_given_pool_pct": 35.62,
+    "health_acc_b0_pct": 34.12,
+    "delta_vs_A_B0_pp": -0.3,
+    "target_plus10_acc_pct": 43.74,
+    "gap_to_plus10_pp": 10.3,
+    "pilot_o2_acc_pct": 33.59,
+    "transfer_gap_pp": 0.16,
+    "gen_first_pct": 31.64,
+    "gen_cov_pct": null
+  },
+  "train_mid_last": {
+    "step": 2000,
+    "n": 50,
+    "pool_ok_rate": 0.86,
+    "leftover_rate": 0.16,
+    "o2_top_ok_rate": 0.7,
+    "wvote_ok_rate": 0.66,
+    "top_wv_disagree": 0.14,
+    "o2_b0_agree": 0.28,
+    "mmd_hit_rate": 0.0,
+    "rank_hit_rate": 0.0,
+    "mean_rank_gap": 0.0,
+    "hash3_rate": 0.005,
+    "cot_rate": 0.995,
+    "mean_unique": 2.88,
+    "mean_alen": 40.13,
+    "sources": {
+      "teacher": 14957,
+      "beat_self": 1043
+    },
+    "skips": {
+      "easy_drop": 3054,
+      "no_signal": 6809
+    }
+  }
+}
+wrote results/full/p123/mids_k16proc_20261004_003256.json
+=== kill criteria vs dualBeat (wvote ≥+1pp; top ≥+0.5 secondary) ===
+dualBeat_O2                n=1319 top=35.41 wvote=36.69 mvote=35.56 cov=53.37 meta_claim=35.41
+k16proc_O2                 n=1319 top=32.07 wvote=33.43 mvote=36.85 cov=51.93 meta_claim=33.43
+PIPELINE_DONE
+{
+  "system_o2": {
+    "acc": 0.33434420015163,
+    "acc_top1": 0.3206974981046247,
+    "acc_wvote": 0.33434420015163,
+    "cov": 0.5193328278999242,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.18498862774829417,
+    "o2_pick_fail_given_pool": 0.3562043795620438
+  },
+  "system_b0": {
+    "acc": 0.3555724033358605,
+    "acc_top1": 0.3411675511751327,
+    "acc_wvote": 0.3555724033358605,
+    "cov": 0.5193328278999242,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.16376042456406367,
+    "o2_pick_fail_given_pool": 0.31532846715328466
+  },
+  "baseline_a_b0_acc": 0.3373768006065201,
+  "gen_only": {
+    "acc": 0.31640625,
+    "cov": null
+  },
+  "pilot_o2": {
+    "acc": 0.3359375,
+    "acc_top1": 0.32421875,
+    "acc_wvote": 0.3359375,
+    "cov": 0.4296875,
+    "claim_agg": "wvote",
+    "leftover_rate": 0.09375,
+    "o2_pick_fail_given_pool": 0.21818181818181817
+  },
+  "mids": {
+    "system_acc_o2_pct": 33.43,
+    "system_acc_o2_top1_pct": 32.07,
+    "system_acc_o2_wvote_pct": 33.43,
+    "claim_agg": "wvote",
+    "system_cov_pct": 51.93,
+    "leftover_pp": 18.5,
+    "pick_fail_given_pool_pct": 35.62,
+    "health_acc_b0_pct": 34.12,
+    "delta_vs_A_B0_pp": -0.3,
+    "target_plus10_acc_pct": 43.74,
+    "gap_to_plus10_pp": 10.3,
+    "pilot_o2_acc_pct": 33.59,
+    "transfer_gap_pp": 0.16,
+    "gen_first_pct": 31.64,
+    "gen_cov_pct": null
+  },
+  "train_mid_last": {
+    "step": 2000,
+    "n": 50,
+    "pool_ok_rate": 0.86,
+    "leftover_rate": 0.16,
+    "o2_top_ok_rate": 0.7,
+    "wvote_ok_rate": 0.66,
+    "top_wv_disagree": 0.14,
+    "o2_b0_agree": 0.28,
+    "mmd_hit_rate": 0.0,
+    "rank_hit_rate": 0.0,
+    "mean_rank_gap": 0.0,
+    "hash3_rate": 0.005,
+    "cot_rate": 0.995,
+    "mean_unique": 2.88,
+    "mean_alen": 40.13,
+    "sources": {
+      "teacher": 14957,
+      "beat_self": 1043
+    },
+    "skips": {
+      "easy_drop": 3054,
+      "no_signal": 6809
+    }
+  }
+}

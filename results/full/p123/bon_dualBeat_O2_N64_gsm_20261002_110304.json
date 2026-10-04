@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "prm_id": "outputs/latentrm_order_pref/best",
+    "generator_type": "coconut",
+    "generator_id": "outputs/p123_dualBeat_20261001_202106/model",
+    "data_path": "data/gsm_test.json",
+    "num_return_sequences": 64,
+    "seed": 42,
+    "sort_by_len": false,
+    "prm_mode": "best_of_n",
+    "n_examples": 1319,
+    "accuracy": 0.34495830174374525,
+    "coverage": 0.6110689916603488,
+    "voting_accuracy": 0.36239575435936316
+  },
+  "n_examples": 1319,
+  "note": "examples stripped for github pack; full dump kept locally",
+  "summary": {
+    "coverage": 0.6110689916603488,
+    "accuracy": 0.34495830174374525,
+    "accuracy_wvote": null,
+    "accuracy_top1": null
+  }
+}

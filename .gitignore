@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.pt
+*.safetensors
+*.bin
+outputs/
+checkpoints/
+latent-data/
+.cache/
+wandb/
+*.egg-info/
+.venv/

@@ -1,0 +1,17 @@
+TRAIN_DONE
+ALL_EVAL_DONE
+STATS {'updates': 3000, 'attempts': 3973, 'skips': {'no_correct': 681, 'low_margin': 292}, 'sources': {'beat_self': 832, 'teacher': 1746, 'self_teacher_wrong': 422}, 'update_rate': 0.7550969041026931, 'self_rate': 0.418, 'recipe': 'o2_beat_teacher'}
+gates Counter({'update': 3000, 'no_correct': 681, 'low_margin': 292})
+sources Counter({'teacher': 1746, 'beat_self': 832, 'self_teacher_wrong': 422})
+  tlen[beat_self] mean=3.46 n=832
+  tlen[self_teacher_wrong] mean=7.66 n=422
+  tlen[teacher] mean=4.80 n=1746
+PILOT GEN 33.3 44.14
+PILOT BON 37.5 43.36
+GSMVALID GEN 31.65 42.6
+STRUCT {'pass1': 0.34375, 'coverage': 0.44140625, 'mean_after_len': 284.669921875, 'starts_###': 0.7646484375}
+vsA gen-cov {'mean_pp': -1.5625, 'ci95_pp': [-6.25, 2.7441406249999467]}
+O2beatLatL2-A+O2 {'bon': (2.34, [-1.56, 6.25]), 'cov': (1.56, [-2.73, 5.48])}
+O2beatLatL2-gateT+O2 {'bon': (4.69, [1.17, 8.59]), 'cov': (3.12, [-0.78, 6.64])}
+REF A 31.0/45.7 A+O2 35.2/41.8 | gatePilot 32.3/46.9 +O2 34.8/43.4 | gateT 33.5/45.7 +O2 32.8/40.2
+PIPELINE_DONE

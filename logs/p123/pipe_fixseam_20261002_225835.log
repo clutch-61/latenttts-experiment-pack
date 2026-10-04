@@ -1,0 +1,41 @@
+TRAIN_DIED
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 939, in forward
+    outputs = block(
+              ^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 439, in forward
+    feed_forward_hidden_states = self.mlp(hidden_states)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 365, in forward
+    hidden_states = self.act(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lihourun/miniconda3/envs/latenttts/lib/python3.11/site-packages/transformers/activations.py", line 47, in forward
+    return 0.5 * input * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
+                                                                               ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 95.07 GiB of which 320.00 KiB is free. Process 1728424 has 38.70 GiB memory in use. Process 1732224 has 38.70 GiB memory in use. Including non-PyTorch memory, this process has 17.65 GiB memory in use. Of the allocated memory 17.19 GiB is allocated by PyTorch, and 29.18 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+P123_k64_b0s0.5:   0%|          | 0/1500 [00:02<?, ?it/s]

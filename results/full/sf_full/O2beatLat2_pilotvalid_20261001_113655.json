@@ -1,0 +1,13 @@
+{
+  "model_id": "/home/lihourun/ll/LatentTTS-main/outputs/sf_full_O2beatLat2_k8_b0.5_ll1_20261001_113655/model",
+  "data_path": "data/sf_pilot/valid.json",
+  "n": 256,
+  "n_samples": 4,
+  "seed": 42,
+  "pass@1_first_sample": 0.33984375,
+  "coverage@N": 0.453125,
+  "pass@1": 0.3388671875,
+  "pass@2": 0.396484375,
+  "pass@4": 0.453125,
+  "mean_unique_answers": 2.28515625
+}

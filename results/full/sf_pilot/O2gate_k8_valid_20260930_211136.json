@@ -1,0 +1,13 @@
+{
+  "model_id": "/home/lihourun/ll/LatentTTS-main/outputs/sf_pilot_O2gate_pseudo_k8_m0.5_20260930_211136/model",
+  "data_path": "data/sf_pilot/valid.json",
+  "n": 256,
+  "n_samples": 4,
+  "seed": 42,
+  "pass@1_first_sample": 0.328125,
+  "coverage@N": 0.47265625,
+  "pass@1": 0.3310546875,
+  "pass@2": 0.40364583333333337,
+  "pass@4": 0.47265625,
+  "mean_unique_answers": 2.43359375
+}

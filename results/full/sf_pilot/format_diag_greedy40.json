@@ -1,0 +1,405 @@
+{
+  "n_ok": 13,
+  "rows": [
+    {
+      "i": 0,
+      "ok": false,
+      "gold": 300.0,
+      "pred": 25.0,
+      "train_target": "#300",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<100/4=25>>\n### 25",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<100/4=25>>\\n### 25<|endoftext|>",
+      "ends_with": "'><<100/4=25>>\\n### 25'"
+    },
+    {
+      "i": 1,
+      "ok": false,
+      "gold": 10.0,
+      "pred": 9.0,
+      "train_target": "#10",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 9",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 9<|endoftext|>",
+      "ends_with": "'><|end-latent|>### 9'"
+    },
+    {
+      "i": 2,
+      "ok": true,
+      "gold": 1400.0,
+      "pred": 1400.0,
+      "train_target": "#1400",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 1400",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 1400<|endoftext|>",
+      "ends_with": "'end-latent|>### 1400'"
+    },
+    {
+      "i": 3,
+      "ok": false,
+      "gold": 15.0,
+      "pred": 105.0,
+      "train_target": "#15",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 105",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 105<|endoftext|>",
+      "ends_with": "'|end-latent|>### 105'"
+    },
+    {
+      "i": 4,
+      "ok": true,
+      "gold": 240.0,
+      "pred": 240.0,
+      "train_target": "#240",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 240",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 240<|endoftext|>",
+      "ends_with": "'|end-latent|>### 240'"
+    },
+    {
+      "i": 5,
+      "ok": true,
+      "gold": 20.0,
+      "pred": 20.0,
+      "train_target": "#20",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 20",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 20<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 20'"
+    },
+    {
+      "i": 6,
+      "ok": false,
+      "gold": 10.0,
+      "pred": 40.0,
+      "train_target": "#10",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 40",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 40<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 40'"
+    },
+    {
+      "i": 7,
+      "ok": false,
+      "gold": 2.0,
+      "pred": 3.33,
+      "train_target": "#2",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<24+4+12=40>>\n<<40/12=3.33>>\n### 3.33",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<24+4+12=40>>\\n<<40/12=3.33>>\\n### 3.33<|endoftext|>",
+      "ends_with": "'0/12=3.33>>\\n### 3.33'"
+    },
+    {
+      "i": 8,
+      "ok": false,
+      "gold": 25.0,
+      "pred": 27.0,
+      "train_target": "#25",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<2*3.50=7.00>>\n<<3.50+2*2=11.50>>\n<<9.50+7+11.50=27.00>>\n### 27",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<2*3.50=7.00>>\\n<<3.50+2*2=11.50>>\\n<<9.50+7+11.50=27.00>>\\n### 27<|endoftext|>",
+      "ends_with": "'11.50=27.00>>\\n### 27'"
+    },
+    {
+      "i": 9,
+      "ok": false,
+      "gold": 25.0,
+      "pred": 24.5,
+      "train_target": "#25",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 24.5",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 24.5<|endoftext|>",
+      "ends_with": "'end-latent|>### 24.5'"
+    },
+    {
+      "i": 10,
+      "ok": false,
+      "gold": 4.0,
+      "pred": 2.0,
+      "train_target": "#4",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 2",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 2<|endoftext|>",
+      "ends_with": "'><|end-latent|>### 2'"
+    },
+    {
+      "i": 11,
+      "ok": false,
+      "gold": 80.0,
+      "pred": 68.0,
+      "train_target": "#80",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<61+7=68>>\n### 68",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<61+7=68>>\\n### 68<|endoftext|>",
+      "ends_with": "'|><<61+7=68>>\\n### 68'"
+    },
+    {
+      "i": 12,
+      "ok": true,
+      "gold": 10.0,
+      "pred": 10.0,
+      "train_target": "#10",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 10'"
+    },
+    {
+      "i": 13,
+      "ok": true,
+      "gold": 80.0,
+      "pred": 80.0,
+      "train_target": "#80",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<90-10=80>>\n### 80",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<90-10=80>>\\n### 80<|endoftext|>",
+      "ends_with": "'><<90-10=80>>\\n### 80'"
+    },
+    {
+      "i": 14,
+      "ok": false,
+      "gold": 28.0,
+      "pred": 25.0,
+      "train_target": "#28",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<50/2=25>>\n### 25",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<50/2=25>>\\n### 25<|endoftext|>",
+      "ends_with": "'|><<50/2=25>>\\n### 25'"
+    },
+    {
+      "i": 15,
+      "ok": false,
+      "gold": 20.0,
+      "pred": 10.0,
+      "train_target": "#20",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 10'"
+    },
+    {
+      "i": 16,
+      "ok": false,
+      "gold": 45.0,
+      "pred": 35.0,
+      "train_target": "#45",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 35",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 35<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 35'"
+    },
+    {
+      "i": 17,
+      "ok": false,
+      "gold": 74.0,
+      "pred": 390.0,
+      "train_target": "#74",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<500-110=390>>\n### 390",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<500-110=390>>\\n### 390<|endoftext|>",
+      "ends_with": "'00-110=390>>\\n### 390'"
+    },
+    {
+      "i": 18,
+      "ok": false,
+      "gold": 390.0,
+      "pred": 150.0,
+      "train_target": "#390",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 150",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 150<|endoftext|>",
+      "ends_with": "'|end-latent|>### 150'"
+    },
+    {
+      "i": 19,
+      "ok": true,
+      "gold": 54.0,
+      "pred": 54.0,
+      "train_target": "#54",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 54",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 54<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 54'"
+    },
+    {
+      "i": 20,
+      "ok": false,
+      "gold": 775.0,
+      "pred": 125.0,
+      "train_target": "#775",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<80+45=125.00>>\n### 125",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<80+45=125.00>>\\n### 125<|endoftext|>",
+      "ends_with": "'+45=125.00>>\\n### 125'"
+    },
+    {
+      "i": 21,
+      "ok": false,
+      "gold": 4.0,
+      "pred": 10.0,
+      "train_target": "#4",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 10<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 10'"
+    },
+    {
+      "i": 22,
+      "ok": false,
+      "gold": 5.0,
+      "pred": 20.0,
+      "train_target": "#5",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 20",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 20<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 20'"
+    },
+    {
+      "i": 23,
+      "ok": false,
+      "gold": 3.0,
+      "pred": 6.0,
+      "train_target": "#3",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<32+16+48=96>>\n<<96/16=6>>\n### 6",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<32+16+48=96>>\\n<<96/16=6>>\\n### 6<|endoftext|>",
+      "ends_with": "'>>\\n<<96/16=6>>\\n### 6'"
+    },
+    {
+      "i": 24,
+      "ok": false,
+      "gold": 12000.0,
+      "pred": 8000.0,
+      "train_target": "#12000",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 8000",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 8000<|endoftext|>",
+      "ends_with": "'end-latent|>### 8000'"
+    },
+    {
+      "i": 25,
+      "ok": true,
+      "gold": 320.0,
+      "pred": 320.0,
+      "train_target": "#320",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 320",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 320<|endoftext|>",
+      "ends_with": "'|end-latent|>### 320'"
+    },
+    {
+      "i": 26,
+      "ok": false,
+      "gold": 7.0,
+      "pred": 14.0,
+      "train_target": "#7",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<70/5=14>>\n### 14",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<70/5=14>>\\n### 14<|endoftext|>",
+      "ends_with": "'|><<70/5=14>>\\n### 14'"
+    },
+    {
+      "i": 27,
+      "ok": false,
+      "gold": 53.0,
+      "pred": 70.0,
+      "train_target": "#53",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 70",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 70<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 70'"
+    },
+    {
+      "i": 28,
+      "ok": false,
+      "gold": 50.0,
+      "pred": 105.0,
+      "train_target": "#50",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<31-2=29>>\n<<45+29+31=105>>\n### 105",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<31-2=29>>\\n<<45+29+31=105>>\\n### 105<|endoftext|>",
+      "ends_with": "'+29+31=105>>\\n### 105'"
+    },
+    {
+      "i": 29,
+      "ok": true,
+      "gold": 360.0,
+      "pred": 360.0,
+      "train_target": "#360",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 360",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 360<|endoftext|>",
+      "ends_with": "'|end-latent|>### 360'"
+    },
+    {
+      "i": 30,
+      "ok": false,
+      "gold": 72.0,
+      "pred": 50.0,
+      "train_target": "#72",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 50",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 50<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 50'"
+    },
+    {
+      "i": 31,
+      "ok": false,
+      "gold": 1200.0,
+      "pred": 112.0,
+      "train_target": "#1200",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 112",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 112<|endoftext|>",
+      "ends_with": "'|end-latent|>### 112'"
+    },
+    {
+      "i": 32,
+      "ok": false,
+      "gold": 55.0,
+      "pred": 15.0,
+      "train_target": "#55",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 15",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 15<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 15'"
+    },
+    {
+      "i": 33,
+      "ok": false,
+      "gold": 15.0,
+      "pred": 7.0,
+      "train_target": "#15",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 7",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 7<|endoftext|>",
+      "ends_with": "'><|end-latent|>### 7'"
+    },
+    {
+      "i": 34,
+      "ok": true,
+      "gold": 150.0,
+      "pred": 150.0,
+      "train_target": "#150",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<500-350=150>>\n### 150",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|><<500-350=150>>\\n### 150<|endoftext|>",
+      "ends_with": "'00-350=150>>\\n### 150'"
+    },
+    {
+      "i": 35,
+      "ok": true,
+      "gold": 56.0,
+      "pred": 56.0,
+      "train_target": "#56",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 56",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 56<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 56'"
+    },
+    {
+      "i": 36,
+      "ok": false,
+      "gold": 80.0,
+      "pred": 150.0,
+      "train_target": "#80",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 150",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 150<|endoftext|>",
+      "ends_with": "'|end-latent|>### 150'"
+    },
+    {
+      "i": 37,
+      "ok": true,
+      "gold": 12.0,
+      "pred": 12.0,
+      "train_target": "#12",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 12",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 12<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 12'"
+    },
+    {
+      "i": 38,
+      "ok": true,
+      "gold": 55.0,
+      "pred": 55.0,
+      "train_target": "#55",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 55",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 55<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 55'"
+    },
+    {
+      "i": 39,
+      "ok": true,
+      "gold": 15.0,
+      "pred": 15.0,
+      "train_target": "#15",
+      "gen_skip_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 15",
+      "gen_with_special": "<|latent|><|latent|><|latent|><|latent|><|latent|><|latent|><|end-latent|>### 15<|endoftext|>",
+      "ends_with": "'<|end-latent|>### 15'"
+    }
+  ]
+}

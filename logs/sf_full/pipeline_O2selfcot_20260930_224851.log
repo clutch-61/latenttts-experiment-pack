@@ -1,0 +1,28 @@
+TRAIN_DONE
+DONE steps=3000 attempts=4759 rate=0.630 skips={'low_margin': 930, 'no_cot_correct': 829} out=outputs/sf_full_O2selfcot_k8_a5_20260930_224851
+{
+  "updates": 3000,
+  "attempts": 4759,
+  "skips": {
+    "low_margin": 930,
+    "no_cot_correct": 829
+  },
+  "update_rate": 0.6303845345660853,
+  "final_roll_cot_ok": 0.7425,
+  "final_roll_hash3": 0.8675,
+  "final_roll_alen": 9.0775,
+  "clone": false,
+  "target": "self_long_cot"
+}ALL_EVAL_DONE
+STATS {'updates': 3000, 'attempts': 4759, 'skips': {'low_margin': 930, 'no_cot_correct': 829}, 'update_rate': 0.6303845345660853, 'final_roll_cot_ok': 0.7425, 'final_roll_hash3': 0.8675, 'final_roll_alen': 9.0775, 'clone': False, 'target': 'self_long_cot'}
+gates Counter({'update': 3000, 'low_margin': 930, 'no_cot_correct': 829})
+mean_tlen 4.505
+PILOT GEN 31.45 44.92
+PILOT BON 33.2 41.41
+GSMVALID GEN 30.6 44.2
+STRUCT {'pass1': 0.328125, 'coverage': 0.44921875, 'mean_after_len': 286.2373046875, 'starts_###': 0.736328125}
+vsA {'mean_pp': -0.78125, 'ci95_pp': [-5.46875, 3.90625]}
+vsGate {'mean_pp': -1.953125, 'ci95_pp': [-6.640625, 2.3535156249999467]}
+self-A bon -1.95 [-5.47, 1.56]
+self-A cov -0.39 [-4.69, 3.91]
+REF A 31.0/45.7 | A+O2 35.2/41.8 | gate 32.3/46.9 +O2 34.8/43.4

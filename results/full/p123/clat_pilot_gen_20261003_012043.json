@@ -1,0 +1,13 @@
+{
+  "model_id": "/home/lihourun/ll/LatentTTS-main/outputs/p123_clat_20261003_012043/model",
+  "data_path": "data/sf_pilot/valid.json",
+  "n": 256,
+  "n_samples": 4,
+  "seed": 42,
+  "pass@1_first_sample": 0.34765625,
+  "coverage@N": 0.47265625,
+  "pass@1": 0.3359375,
+  "pass@2": 0.40755208333333337,
+  "pass@4": 0.47265625,
+  "mean_unique_answers": 2.265625
+}

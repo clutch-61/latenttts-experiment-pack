@@ -1,0 +1,13 @@
+{
+  "model_id": "/home/lihourun/ll/LatentTTS-main/outputs/sf_full_O2beatT2_k8_b0.5_20261001_003123/model",
+  "data_path": "data/gsm_valid.json",
+  "n": 500,
+  "n_samples": 4,
+  "seed": 42,
+  "pass@1_first_sample": 0.318,
+  "coverage@N": 0.438,
+  "pass@1": 0.3145,
+  "pass@2": 0.378,
+  "pass@4": 0.438,
+  "mean_unique_answers": 2.418
+}

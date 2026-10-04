@@ -1,0 +1,8 @@
+[Fri Oct  2 02:14:46 PM CST 2026] evals done
+dualBeat_O2_s42            n=1319 top=35.41 wvote=36.69 mvote=35.56 cov=53.37
+A_B0_s42                   n=1319 top=33.74 wvote=33.66 mvote=33.97 cov=51.10
+dualBeat_O2_s43            n=1319 top=35.86 wvote=36.16 mvote=36.39 cov=53.30
+A_B0_s43                   n=1319 top=32.45 wvote=33.74 mvote=33.89 cov=51.33
+dualBeat_O2_s44            n=1319 top=36.32 wvote=36.77 mvote=35.03 cov=54.28
+A_B0_s44                   n=1319 top=31.16 wvote=33.06 mvote=33.66 cov=49.20
+SEEDS_DONE
