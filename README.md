@@ -1,401 +1,189 @@
-<a name="readme-top"></a>
+# LatentTTS 后续研究：一体系统（P1 选优 · P2 分布 · P3 Self-Forcing）
 
-<div align="center">
+> 本仓库是**新工作**的代码与实验打包，不是复现原 LatentTTS 论文主线。  
+> 原论文基础设施（COCONUT + LatentRM BoN）仅作底座；目标、配方、结论以本文件与 `results/full/PLAN.md` 为准。
 
-<h1>Parallel Test-Time Scaling for Latent Reasoning Models</h1>
+**协议（除非另注）：** GSM8K-Test · BoN N=16 · seed=42 · claim=`wvote`（softmax T=1，`sum_logit`）  
+**基线：** A + B0 = **33.74%**  
+**目标：** (gen+O2) − (A+B0) ≈ **+10pp** → claim ≈ **43.74%**  
+**当前官方锁：** dualBeat + O2 · wvote **36.69%**（top 35.41 · cov 53.37）· vs A+B0 **+2.95pp**
 
-</div>
-
-<div align="center">
-
-<!-- Paper Link -->
-
-<a href="https://arxiv.org/abs/2510.07745">
-    <img src="https://img.shields.io/badge/Paper-arXiv-b31b1b?style=for-the-badge&logo=arxiv" alt="Paper" height="18">
-  </a>
-
-<!-- HuggingFace Models -->
-
-<a href="https://huggingface.co/collections/ModalityDance/latent-tts">
-    <img src="https://img.shields.io/badge/HuggingFace-Models-fcc21b?style=for-the-badge&logo=huggingface&logoColor=white" alt="HF Models"   height="18">
-  </a>
-
-<!-- HuggingFace Papers -->
-
-<a href="https://huggingface.co/papers/2510.07745">
-    <img src="https://img.shields.io/badge/HuggingFace-Papers-fcc21b?style=for-the-badge&logo=huggingface&logoColor=white" alt="HF Papers"   height="18">
-  </a>
-
-<img src="./assets/main_no_caption.png" alt="Project Logo" width="800">
-
-</div>
+杀伤线（新配方要「过线」）：相对 dualBeat，wvote **≥ +1pp**（≥ **37.69**）。未过线不锁新官方、不宣称成功。
 
 ---
 
-This is the implementation for the paper [**Parallel Test-Time Scaling for Latent Reasoning Models**](https://huggingface.co/papers/2510.07745), enabling efficient exploration of continuous thought spaces through stochastic sampling and reward model-guided search. It provides implementations of two stochastic sampling methods (Monte Carlo Dropout and Additive Gaussian Noise) and a LatentRM for best-of-N and beam search strategies. This repository includes training scripts, evaluation pipelines, and inference code for multiple backbone models including COCONUT, CODI, and CoLaR, evaluated on benchmarks such as GSM8K Test, GSM8K Hard, and MultiArith.
-
-
-<!-- ACL 2026 Main Conference -->
-
-<div align="center">
-  <img src="./assets/accepted.png" alt="Accepted at ACL 2026 (Main Conference)" width="450">
-</div>
-
-
-### 🪐 Key Features
-
-> **🧩 Full Transformers Integration**
-> All models (COCONUT, CODI, and CoLaR) are **seamlessly integrated with Transformers**, providing native support for:
-> - ✅ **Batch processing** for efficient parallel inference
-> - ✅ **Standard Transformers APIs** (`generate()`, `from_pretrained()`, etc.)
-> - ✅ **Device management** with `device_map` and multi-GPU support
-> - ✅ **Easy integration** into existing Transformers-based workflows
-> 
-> Simply use `model.generate()` with batch inputs just like any other Transformers model!
-
-🧭 **Stochastic Sampling Methods**
-Two complementary approaches for exploring continuous thought spaces: Monte Carlo Dropout and Additive Gaussian Noise, enabling diverse reasoning path generation during inference.
-
-🌌 **Latent Reward Model (LatentRM)**
-A trained reward model that guides best-of-N selection and beam search, significantly improving reasoning accuracy by identifying high-quality latent reasoning paths.
-
-
-## 📑 Table of Contents <span id="table-of-contents"></span>
-
-* [🚀 Quick Start](#quick-start)
-  * [Installation](#installation)
-  * [Data](#data)
-  * [Running](#running)
-* [✨ How It Works](#how-it-works)
-* [📁 Project Structure](#project-structure)
-* [🤝 Community](#community)
-* [🌱 Acknowledgements](#acknowledgements)
-* [🔗 Related Projects](#related)
-* [📚 Citation](#citation)
-
-## 🚀 Quick Start <span id="quick-start"></span>
-
-
-
-### 1. Installation <span id="installation"></span>
-
-#### **Conda (recommended)**
-
-```bash
-conda create -n latenttts python=3.11 -y
-conda activate latenttts
-pip install -r requirements.txt
-```
-
-
-#### **Hardware Requirements**
-
-* GPU: **Recommended for training and inference (CUDA-compatible)**
-* Python: **3.11**
-* CUDA: **Compatible with PyTorch 2.8.0**
-* Frameworks: **PyTorch 2.8.0, Transformers 4.52.4, Accelerate 1.7.0**
-
-### 2. Preparation <span id="data"></span>
-
-#### **Dataset**
-
-The datasets are located in the `/data` directory. These datasets are obtained from the [coconut](https://github.com/facebookresearch/coconut) project.
-
-#### **Latent Reasoning Models**
-
-Download the pre-trained models from HuggingFace to the `checkpoints/` directory:
-
-```bash
-# Download COCONUT model
-huggingface-cli download ModalityDance/latent-tts-coconut --local-dir checkpoints/coconut
-
-# Download CODI model
-huggingface-cli download ModalityDance/latent-tts-codi --local-dir checkpoints/codi
-
-# Download CoLaR model
-huggingface-cli download ModalityDance/latent-tts-colar --local-dir checkpoints/colar
-
-# Optionally download LatentRM (for reward-guided generation)
-huggingface-cli download ModalityDance/latent-tts-rm --local-dir checkpoints/latentRM
-```
-
-**Simple Generation Example**
-
-Here's a minimal example of using `.generate()` with a latent reasoning model:
-
-```python
-from transformers import AutoTokenizer
-from src.generation_mixin import LatentGenerationMixin, LatentGenerationConfig
-from src.paths import MODELS
-
-# Load tokenizer
-model_type = "coconut"  # or "codi", "colar"
-model_id = MODELS[model_type]["id"]
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
-
-# Get latent token IDs
-latent_id = tokenizer.convert_tokens_to_ids("<|latent|>")
-start_id = tokenizer.convert_tokens_to_ids("<|start-latent|>")
-end_id = tokenizer.convert_tokens_to_ids("<|end-latent|>")
-
-# Create model class with generation mixin
-class LatentModel(MODELS[model_type]["class"], LatentGenerationMixin):
-    def __init__(self, config):
-        super().__init__(config)
-
-# Load model
-model = LatentModel.from_pretrained(
-    model_id,
-    latent_id=latent_id,
-    latent_start_id=start_id,
-    latent_end_id=end_id,
-    device_map="auto",
-)
-
-# Prepare input
-question = "What is 2 + 2?\n<|start-latent|>"
-inputs = tokenizer(question, return_tensors="pt").to(model.device)
-
-# Configure generation
-generation_config = LatentGenerationConfig(
-    max_new_tokens=512,
-    latent_length=6,
-    latent_do_sample=True,
-    latent_do_sample_by="dropout",  # or "noise"
-    dropout_p=0.1,
-    pad_token_id=tokenizer.pad_token_id,
-    eos_token_id=tokenizer.eos_token_id,
-)
-
-# Generate
-output = model.generate(
-    **inputs,
-    generation_config=generation_config,
-    num_return_sequences=1,
-)
-
-# Decode result
-result = tokenizer.decode(output[0], skip_special_tokens=True)
-print(result)
-```
-
-#### **Data Annotation**
-
-First, run the data annotation process to prepare training data for LatentRM:
-
-```bash
-./run_annotation.sh
-```
-
-This script will:
-
-- Process training data and validation data with specified batch size and sampling parameters
-- Generate annotated data for LatentRM training
-- Save results to the specified output directory
-
-
-
-### 3. Running <span id="running"></span>
-
-#### **Training Configuration**
-
-Configure your training parameters in the `training_args/` directory. The main configuration file is `train_coconut.yaml`:
-
-```yaml
-run_name: "run1"
-metric_for_best_model: "test_n_64_recall_at_1"
-output_dir: "/workspace/model-out/"
-# ... other parameters
-```
-
-#### **Model Training**
-
-Navigate to your project directory and launch training:
-
-```bash
-cd your/path/to/latent-tts
-accelerate launch -m src.train training_args/train_coconut.yaml
-```
-
-The training process will:
-
-- Load the annotated data from the previous step
-- Train the latentRM with the specified configuration
-- Save checkpoints and evaluation results
-
-> [!NOTE]
-> Pre-trained checkpoint is available at [HuggingFace](https://huggingface.co/ModalityDance/latent-tts-rm).
-
-#### **Evaluation and Testing**
-
-##### **Majority Voting and Coverage Testing**
-
-Run comprehensive evaluation using majority voting and coverage metrics:
-
-```bash
-# For LLaMA model (CoLaR)
-./run_tests_llama.sh
-
-# For GPT-2 models (COCONUT and CODI)
-./run_tests.sh
-```
-
-These scripts will:
-
-- Test different sampling strategies (dropout, noise)
-- Evaluate on multiple datasets (GSM8K Test, MultiArith, GSM8K Hard)
-- Generate detailed performance metrics including Pass@k, Coverage, and Voting Accuracy
-
-##### **Beam Search and Best-of-N Testing**
-
-For beam search evaluation:
-
-```bash
-./run_tts_with_rm.sh
-```
-
-This script will:
-
-- Test beam search with different `beam size` (1, 2, 4, 8)
-- Test Best-of-N with different `n_return_sequences` (1, 4, 16, 64)
-- Generate logs for different configurations
-
-
-
-<!--
-How It Works (Methods Overview)
-
-
-GOALS OF THIS SECTION:
-1. Provide a clear and brief explanation of how the system or method works.
-2. Make this understandable even for readers who do not yet know the technical details.
-
-Points:
-1. A high-level description of the system architecture or method.
-2. Key components/modules and their roles.
-3. A step-by-step workflow of the main process.
-4. Figures or diagrams to illustrate the method.
-
-Or:
-
-you can organize in your own way as long as it meets the goals above!!!
-
--->
-
-## ✨ How It Works <span id="how-it-works"></span>
-
-🪐 **LatentTTS** is built around a modular research pipeline for **parallel test-time scaling of latent reasoning models**, where each component corresponds to a well-defined stage in the overall method.  
-The system separates input processing, stochastic latent reasoning, and reward-guided selection into independent modules, allowing controlled experimentation and analysis.  
-This design enables flexible replacement of individual components (e.g., switching between dropout and noise sampling, or different backbone models) without affecting the rest of the pipeline.
-
-At a high level, the workflow proceeds as follows:
-
-1. **Input Processing and Tokenization** — Raw problem inputs (e.g., math word problems) are tokenized and prepared with special latent tokens (`<|latent|>`, `<|start-latent|>`, `<|end-latent|>`). The model processes these inputs through its embedding layer, setting up the context for latent reasoning generation.  
-2. **Stochastic Latent Reasoning Generation** — The model generates multiple diverse reasoning paths in the continuous latent space using one of two stochastic sampling methods: **Monte Carlo Dropout** (randomly dropping activations during forward passes to create variability) or **Additive Gaussian Noise** (injecting noise directly into latent embeddings). Each sampling method explores different regions of the latent thought space, producing varied reasoning trajectories for the same input.  
-3. **Reward-Guided Selection and Output Generation** — The trained **Latent Reward Model (LatentRM)** evaluates the quality of each generated reasoning path by scoring latent embeddings. Based on these scores, the system applies either **best-of-N selection** (choosing the top-N highest-scoring paths) or **beam search** (maintaining multiple high-quality candidates during generation) to identify the most promising reasoning paths. The final answer is extracted from the selected path, significantly improving accuracy through parallel exploration and intelligent selection.
-
-
-
-
-
-## 📁 Project Structure <span id="project-structure"></span>
-
-```
-latent-tts/
-├── src/                   # Source code
-│   ├── models/            # Model implementations
-│   │   ├── coconut.py     # COCONUT model
-│   │   ├── codi.py        # CODI model
-│   │   ├── colar.py       # CoLaR model
-│   │   ├── gpt2.py        # GPT-2 base models
-│   │   ├── llama.py       # LLaMA base models
-│   │   ├── loss.py        # Loss functions
-│   │   └── perturbation.py # Perturbation methods
-│   ├── annotate_data.py   # Data annotation script
-│   ├── train.py           # latentRM training script
-│   ├── trainer.py         # Training utilities
-│   ├── infer_gpt2.py      # GPT-2 inference
-│   ├── infer_llama.py     # LLaMA inference
-│   ├── infer_gpt2_rm.py   # latentRM-based inference
-│   ├── dataset.py         # Dataset handling
-│   ├── generation_mixin.py # Generation utilities
-│   ├── paths.py           # Path utilities
-│   └── utils.py           # Utility functions
-├── training_args/         # Training configurations
-│   └── train_coconut.yaml # COCONUT training config
-├── data/                  # Dataset files
-├── checkpoints/           # Model checkpoints
-│   └── latentRM/          # latentRM checkpoint
-|   └── coconut/
-├── run_annotation.sh      # Data annotation script
-├── run_tests.sh           # GPT-2 evaluation script
-├── run_tests_llama.sh     # LLaMA evaluation script
-├── run_tts_with_rm.sh     # Beam search evaluation script
-└── requirements.txt       # Python dependencies
-```
-
-## 🤝 Join the Community <span id="community"></span>
-
-We welcome researchers, developers, and enthusiasts to join the **LatentTTS** community. You can participate by reporting issues, contributing features, or sharing feedback to help us improve and grow the project.
-
-> [!TIP]
-> 📄 Explore the paper on [**Hugging Face Papers**](https://huggingface.co/papers/2510.07745) — it includes community discussions, citation tools, and related resources. If you find our work insightful, please consider giving it an **upvote** to support further research!
-
-## 🌱 **Acknowledgements** <span id="acknowledgements"></span>
-
-We would like to thank the contributors, open-source projects, and research communities whose work made **LatentTTS** possible. This project builds upon ideas, tools, and datasets developed by the broader machine learning and reasoning research ecosystem. We also acknowledge helpful discussions and support from the members of **Modality Dance Group** and the open-source community.
-
-This project is licensed under the **MIT License**. Please refer to the LICENSE file for more details.
-
-
-## 🔗 **Related Projects** <span id="related"></span>
-
-### 📄 Related Papers
-
-- **[LLMs are Single-threaded Reasoners: Demystifying the Working Mechanism of Soft Thinking](https://arxiv.org/abs/2508.03440)**  
-  Check out stochastic soft thinking!
-
-### 🌟 Awesome Collections
-
-- **[Awesome Latent Space](https://github.com/YU-deep/Awesome-Latent-Space)**  
-  A curated collection of resources on latent space methods and applications.
-
-- **[Awesome Latent CoT](https://github.com/EIT-NLP/Awesome-Latent-CoT)**  
-  A comprehensive list of latent chain-of-thought reasoning resources.
-
-- **[Awesome Efficient Reasoning](https://github.com/hemingkx/Awesome-Efficient-Reasoning)**  
-  A collection of efficient reasoning methods and techniques.
-
-
-## 📚 **Citation** <span id="citation"></span>
-
-If you use **LatentTTS** in your research or applications, please consider citing:
-
-```bibtex
-@misc{you2025paralleltesttimescalinglatent,
-      title={Parallel Test-Time Scaling for Latent Reasoning Models}, 
-      author={Runyang You and Yongqi Li and Meng Liu and Wenjie Wang and Liqiang Nie and Wenjie Li},
-      year={2025},
-      eprint={2510.07745},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2510.07745}, 
-}
-```
+## 1. 新 Idea（我们在研究什么）
+
+原系统是「冻结生成器 + 离线 LatentRM 做 BoN」。我们要做的是**生成器与奖励在同一在线环里共训**，并拆成可独立证伪的三层：
+
+| Phase | 名字 | 意图 |
+|-------|------|------|
+| **P1** | 选优 / leftover | 池里有金标时，O2（及可选 B0 门）要把对的选出来；训选与 claim 对齐 |
+| **P2** | 分布对齐（MMD） | student 在线 latent 对齐「正轨迹」内容视图（老师对 → teacher latents；否则 cache / 选中正确 latents） |
+| **P3** | Self-Forcing（SF-C） | 可微 latent rollout + 答案 CE；可选 `λ_lat` 拉 live↔选中 latents |
+
+**一体链（代码主入口）：** `scripts/train_p123_system.py`  
+冻结/可训组合、`select_mode`（`dual_beat` / `coverage` / `wvote`）、`λ_mmd` / `λ_lat` / `λ_rank`、多卡 packing（`--frozen_device`、`--gen_replica_device`）都在这里。
+
+**评测主入口：** `python -m src.infer_gpt2_rm`（BoN + `claim_agg=wvote`）  
+**训练后自动评测：** `scripts/pipeline_p123_eval.sh`  
+**中间量诊断：** `scripts/diag_p123_mids.py` · 训练 `mid_metrics.jsonl`
+
+### 关键指标（怎么读数）
+
+- **claim / wvote**：对外主数字（加权投票）
+- **top**：O2 argmax；与 wvote 拉开说明聚合在救分
+- **cov**：池内是否至少一条金标（完美选优上限）
+- **leftover**：有池但 O2 top / claim 仍错
+- **分开报：** generator-only vs +O2；健康对照 +B0
+- **禁止：** 无证据锁成功；盲抬 `λ_mmd`；把 train pool≈0.9 当成测集已通
 
 ---
 
-<div align="center">
+## 2. 已站住的正信号
 
-<a href="https://github.com/ModalityDance/LatentTTS">
-  <img src="https://img.shields.io/badge/⭐ Star%20us%20on%20GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
-</a>
+| 结果 | 数字 | 含义 |
+|------|------|------|
+| **dualBeat**（P1 双门 O2+B0 + self-beat，暖启后 SF） | wvote **36.69** | 相对假迁移 / 乱叠 λ 的配方，这是当前**唯一官方锁** |
+| 相对 A+B0 | **+2.95pp** | 有真实系统增益，但距 +10 还差 ~7pp |
+| N16 完美选优上限 | cov **53.4%** | 43.7 目标**在上限内** → 不是算术不可能 |
+| O2 顺序机制（Phase-1） | order_pair / hierarchy 明显高于 B0 | LatentRM 偏好训练有机制信号；**不等于** TTS leftover 已解决 |
+| jrank 交叉 | dualBeat gen + jrank O2 → **37.00** | 微涨来自 O2，生成器自己掉 top；仍 < 37.69 |
 
-<a href="https://github.com/ModalityDance/LatentTTS/issues">
-  <img src="https://img.shields.io/badge/🐞 Report%20Issues-e74c3c?style=for-the-badge&logo=github" />
-</a>
+---
 
+## 3. 实验总表（新配方，按层）
 
-</div>
+下列均为 GSM-Test N16 s42 · claim=wvote（除非标明）。完整决策流见 `results/full/PLAN.md`。
+
+### 3.1 生成器（P3 侧）
+
+| 配方 | wvote | 结论 |
+|------|------:|------|
+| dualBeat（锁） | **36.69** | 正信号配方 |
+| dualBeatLat / Div / Proc / B0t / X2 续训 | ≤ 锁 | 饱和；多样性↑、过程形↑ ≠ 涨点 |
+| joint（P1 冻选 + λ_mmd=0.1 + SF-C + λ_lat） | 36.32 | 一体接线成功，claim 未过杀伤 |
+| jrank（上 + 可训 leftover hinge） | 36.92 | +0.23，噪声边；gen top 掉 |
+| k16cov（k=16 + coverage + ek0.25） | 36.32 | 训侧 teacher CE 多，**测 cov 几乎不动** |
+| k16proc（coverage + process） | **33.43** | 更差：变成 teacher 长 CoT 克隆 |
+| infer 对齐 dropout=0.2（锁 gen） | 34.95 | cov↑ 转化↓，不是免费点 |
+
+### 3.2 选优器 O2（P1 侧）
+
+| 配方 | wvote | 结论 |
+|------|------:|------|
+| 离线 / on-policy / O2hard | ≤ 锁附近 | 同族 on-policy 停 |
+| dualBeat + jrank O2 | **37.00** | 最好 O2 侧；仍未过 +1pp 杀伤 |
+| o2hardrank（gsm_train k16 leftover hinge） | 36.32 | train 会学、test 172 道稳定 leftover 不翻 |
+
+**稳定 leftover ~172 题：** 换 O2 / hinge 净救≈0；train 挖到的 gap（中位 ~0.44）≠ test gap（中位 ~1.83）。
+
+### 3.3 聚合 / 采样（推理侧）
+
+| 尝试 | 结果 | 结论 |
+|------|------|------|
+| N64 全量 | wvote 37.00 · cov 61 | cov↑ **不转化** |
+| 特征门控 MV / wvote-mass / 自适应 extra-N | ≤ ~37.1 | ≈盲 N64；help≈hurt |
+| 空池@16→N64（oracle） | 36.24 | 加采救不了转化 |
+| 拼 A 候选盖 dualBeat 空池 | 仅盖住空池的 ~9% | 无效 |
+| leftover→MV（**金标作弊**） | ~39.3 | 说明高分题里多数票也常错 |
+
+→ **聚合层封死**；不要再靠 N↑ / 门控凑 +10。
+
+### 3.4 分数缝 / 协议
+
+| 尝试 | 结果 |
+|------|------|
+| claim 改 `mean_log_prob` / `sum_log_prob` | 掉点 → 仍用 `sum_logit` |
+| fixseam-B（SF-B 缓存 latent） | 伤 `g_lat` |
+| clat 修缝 | +0.16，未过杀伤 |
+
+---
+
+## 4. 瓶颈（当前真正卡在哪）
+
+距目标约 **7pp**，拆开：
+
+1. **主墙 · 测集空池 ~46.6%**  
+   训练 k=64 时 pool 常 0.88–0.98；测试 N16 pool ~0.53。  
+   单条 teacher CE（k16cov）**抬不动**测空池 → 不是再调 `select_mode` 能混过去。
+
+2. **次墙 · 稳定 leftover ~13%（172 题）**  
+   O2 排序剩余空间大约 ≤1pp（已见 37.0）。要的是池里**更多/更好认的金标**，不是再训 RM。
+
+3. **有池选错（池内 ~1/3）**  
+   在 cov 先抬之前，继续拧 O2 / 聚合是噪声。
+
+**下一步优先级（研究分叉）：**
+
+1. 测样空池上的**生成覆盖**：多样本老师 + 校验后再 CE；或硬空池多 roll 自洽——**勿再全量 process**。  
+2. 针对 leftover **把金标做厚**（仍是 gen）。  
+3. 仅当测 cov **先 +≥3pp** 后再碰 O2/聚合。
+
+**Do not：** 盲 `λ_mmd↑`；再同族 leftover-O2；再 N64/门控凑点；无 ≥37.69 证据宣称成功。
+
+---
+
+## 5. 仓库里有什么
+
+本 pack **刻意不含** 权重与大体量缓存（完整树在本地 `LatentTTS-main/`）。
+
+```
+src/                  # 推理 / 生成 mixin / LatentRM / SF rollout / scoring
+scripts/              # P123 训练、评测管线、挖难例、诊断
+training_args/        # yaml 训练配置
+results/full/
+  PLAN.md             # 完整决策与数字（权威实验日志）
+  p123/               # 评测 meta / mids（大 BoN dump 已抽成 meta）
+logs/                 # 训练与 BoN 日志
+```
+
+### 关键脚本
+
+| 脚本 | 作用 |
+|------|------|
+| `scripts/train_p123_system.py` | 一体 P123 训练 |
+| `scripts/pipeline_p123_eval.sh` | 训完 → pilot + GSM N16 O2/B0 + mids |
+| `scripts/mine_o2_hard_leftover.py` | gsm_train 挖 leftover（**禁止碰 test**） |
+| `scripts/mine_k16_hard_questions.py` | gsm_train 标 empty/leftover 子集 |
+| `scripts/train_o2_hard_rank.py` | 冻 gen，只训 O2 hinge |
+| `src/infer_gpt2_rm.py` | BoN / wvote 评测 |
+| `src/sf_rollout.py` | SF-B / SF-C |
+
+### 最小评测示例（需本地权重）
+
+```bash
+python -m src.infer_gpt2_rm \
+  --generator_type=coconut \
+  --generator_id=outputs/p123_dualBeat_20261001_202106/model \
+  --prm_id=outputs/latentrm_order_pref/best \
+  --prm_mode=best_of_n \
+  --data_path=data/gsm_test.json \
+  --num_return_sequences=16 --seed=42 \
+  --claim_agg=wvote --max_new_tokens=128 \
+  --result_json=results/full/p123/bon_smoke.json
+```
+
+训练示例见 `scripts/train_p123_system.py --help`；历史配方参数写在各 `outputs/p123_*/train_args.json`（权重未打包）。
+
+---
+
+## 6. 与原 LatentTTS 的关系
+
+| | 原论文仓库 | 本 pack |
+|--|-----------|---------|
+| 问题 | 并行 TTS + LatentRM | **在线一体**：SF +（可选）MMD + 选优闭环 |
+| 主 claim | 论文表 | GSM (gen+O2) vs A+B0，冲 **+10pp** |
+| 成功标准 | 论文数字 | 相对 dualBeat **wvote≥+1** 才考虑换锁 |
+| 文档 | 原 README / arXiv | **本 README + `PLAN.md`** |
+
+原论文：[Parallel Test-Time Scaling for Latent Reasoning Models](https://arxiv.org/abs/2510.07745) · 仅作底座引用。
+
+---
+
+## 7. 状态（写 README 时）
+
+- 官方锁：**dualBeat + O2 = 36.69 wvote**  
+- +10 目标未达成；聚合 / 同族 O2 / 朴素 coverage **已否证**  
+- 研究重心转向：**测集难空池上的生成覆盖**（多样本/校验式老师信号）  
+- 更细的逐步记录、杀伤判据、Do-not 列表 → [`results/full/PLAN.md`](results/full/PLAN.md)
