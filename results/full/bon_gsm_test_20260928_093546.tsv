@@ -1,4 +1,0 @@
-prm	n	acc	cov	vot	log
-O2	4	FAIL			logs/bon_matrix/O2_N4_20260928_093546.log
-O2	16	FAIL			logs/bon_matrix/O2_N16_20260928_093546.log
-O2	64	FAIL			logs/bon_matrix/O2_N64_20260928_093546.log

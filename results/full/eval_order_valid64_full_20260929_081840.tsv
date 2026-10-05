@@ -1,4 +1,0 @@
-model	prm	order_pair_acc	hierarchy_consistency	log
-O2	outputs/latentrm_order_pref/best	0.9717722634474436	0.8936179527028691	logs/eval_order/O2_valid64_full_20260929_081840.log
-B0	outputs/latentrm_baseline/best	0.8600110793604127	0.7694707701366461	logs/eval_order/B0_valid64_full_20260929_081840.log
-B1	outputs/latentrm_baseline_bce/best	0.7659961916663476	0.7284429761420801	logs/eval_order/B1_valid64_full_20260929_081840.log

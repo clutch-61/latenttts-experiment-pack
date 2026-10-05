@@ -157,7 +157,7 @@ def main(
         lambda x, idx: {
             "idx": idx,
             "question": x["question"] + postfix,
-            "answer": float(x["answer"].replace(",", "")),
+            "answer": float(str(x["answer"]).replace(",", "")),
         },
         with_indices=True,
     )

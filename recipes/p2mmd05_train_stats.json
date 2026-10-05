@@ -1,0 +1,11 @@
+{
+  "sources": {
+    "beat_self": 11262,
+    "teacher": 738
+  },
+  "skips": {
+    "no_signal": 2146
+  },
+  "attempts": 14146,
+  "steps": 1500
+}

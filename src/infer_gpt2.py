@@ -21,6 +21,7 @@ from .utils import pass_at_k_mean, InferenceCollator
 @torch.no_grad()
 def main(
     model_type: Literal["coconut", "codi"] = "coconut",
+    model_id: str | None = None,
     model_dtype: Literal["bf16", "fp16", "fp32"] = "fp32",
     data_path: str = "data/gsm_test.json",
     n_samples: int = 1,
@@ -33,7 +34,7 @@ def main(
     dropout_p: float | None = None,
 ):
     new_line_after_input = model_type == "coconut"
-    model_id = MODELS[model_type]["id"]
+    model_id = model_id or MODELS[model_type]["id"]
     accelerator = Accelerator()
     accelerator.wait_for_everyone()
 
@@ -94,7 +95,7 @@ def main(
         lambda x, idx: {
             "idx": idx,
             "question": x["question"] + postfix,
-            "answer": float(x["answer"].replace(",", "")),
+            "answer": float(str(x["answer"]).replace(",", "")),
         },
         with_indices=True,
     )

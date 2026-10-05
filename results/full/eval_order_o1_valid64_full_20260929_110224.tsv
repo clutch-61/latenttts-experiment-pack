@@ -1,2 +1,0 @@
-model	prm	order_pair_acc	hierarchy_consistency	log
-O1	outputs/latentrm_order_only/best	0.9703789846932335	0.7364132141690153	logs/eval_order/O1_valid64_full_20260929_110224.log

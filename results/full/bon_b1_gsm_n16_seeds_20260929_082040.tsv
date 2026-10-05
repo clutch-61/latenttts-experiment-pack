@@ -1,4 +1,0 @@
-split	prm	n	seed	acc	cov	vot	log
-gsm_test	B1	16	43	31.9939%	50.7202%	33.7377%	logs/bon_b1/gsm_test_B1_N16_s43_20260929_082040.log
-gsm_test	B1	16	44	32.4488%	51.4026%	33.3586%	logs/bon_b1/gsm_test_B1_N16_s44_20260929_082040.log
-gsm_test	B1	16	42	32.1456%	51.0993%	34.3442%	logs/bon_b1/gsm_test_B1_N16_s42_20260928_152912.log (prior)
