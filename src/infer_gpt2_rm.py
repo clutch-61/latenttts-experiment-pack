@@ -103,18 +103,19 @@ def main(
         def __init__(self, config):
             super().__init__(config)
 
-    model = LatentGPT2LMHeadModel.from_pretrained(
-        model_id,
+    load_kw = dict(
         latent_id=latent_id,
         latent_start_id=start_id,
         latent_end_id=end_id,
-        target_id=target_id,
         pad_token_id=processing_class.pad_token_id,
         device_map={"": accelerator.process_index},
         torch_dtype=(
             torch.bfloat16 if model_dtype == "bf16" else (torch.float16 if model_dtype == "fp16" else None)
         ),
     )
+    if generator_type == "coconut":
+        load_kw["target_id"] = target_id
+    model = LatentGPT2LMHeadModel.from_pretrained(model_id, **load_kw)
     if prm_model_family == "llama":
 
         prm_processing_class = AutoTokenizer.from_pretrained(prm_id)

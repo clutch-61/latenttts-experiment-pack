@@ -83,26 +83,37 @@ class TrainJSON(Dataset):
         return self.data[i]
 
 
-def load_generator(device, ckpt: str, *, trainable: bool, dtype=torch.float32):
+def latent_prefix(question: str, generator_type: str) -> str:
+    if generator_type == "coconut":
+        return question + "\n<|start-latent|>"
+    return question + "<|start-latent|>"
+
+
+def load_generator(
+    device, ckpt: str, *, trainable: bool, dtype=torch.float32, generator_type: str = "coconut"
+):
     tok = AutoTokenizer.from_pretrained(ckpt)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
-    class LatentCOCONUT(MODELS["coconut"]["class"], LatentGenerationMixin):
+    cls = MODELS[generator_type]["class"]
+
+    class LatentGen(cls, LatentGenerationMixin):
         def __init__(self, config):
             super().__init__(config)
 
-    model = LatentCOCONUT.from_pretrained(
-        ckpt,
+    load_kw = dict(
         latent_id=tok.convert_tokens_to_ids("<|latent|>"),
         latent_start_id=tok.convert_tokens_to_ids("<|start-latent|>"),
         latent_end_id=tok.convert_tokens_to_ids("<|end-latent|>"),
-        target_id=tok.convert_tokens_to_ids(">>"),
         attn_pdrop=0.0,
         embd_pdrop=0.0,
         pad_token_id=tok.pad_token_id,
         torch_dtype=dtype,
-    ).to(device)
+    )
+    if generator_type == "coconut":
+        load_kw["target_id"] = tok.convert_tokens_to_ids(">>")
+    model = LatentGen.from_pretrained(ckpt, **load_kw).to(device)
     if not trainable:
         model.eval()
         for p in model.parameters():
@@ -167,9 +178,21 @@ def prm_scores_from_texts(prm, prm_tok, texts, latents, device, chunk):
 
 
 @torch.no_grad()
-def generate_batch(model, gen_tok, questions, *, k, sample, latent_length, max_new_tokens, device, dropout_p):
+def generate_batch(
+    model,
+    gen_tok,
+    questions,
+    *,
+    k,
+    sample,
+    latent_length,
+    max_new_tokens,
+    device,
+    dropout_p,
+    generator_type: str = "coconut",
+):
     _set_cuda(device)
-    prompts = [q + "\n<|start-latent|>" for q in questions]
+    prompts = [latent_prefix(q, generator_type) for q in questions]
     enc = gen_tok(prompts, return_tensors="pt", padding=True)
     kw = dict(latent_do_sample=True, latent_do_sample_by="dropout", dropout_p=dropout_p) if sample else dict(
         latent_do_sample=False
@@ -250,6 +273,7 @@ def sample_and_score(
     replica=None,
     replica_device=None,
     timing_out=None,
+    generator_type: str = "coconut",
 ):
     """Returns per-question (rows, teacher_tuple) for a batch of questions.
 
@@ -258,7 +282,7 @@ def sample_and_score(
     only split that can beat single-card student generate (teacher k=1 is already cheap).
     """
     fdev = frozen_device or device
-    extractor = MODELS["coconut"]["answer_extractor"]
+    extractor = MODELS[generator_type]["answer_extractor"]
     end_id = gen_tok.convert_tokens_to_ids("<|end-latent|>")
     qs = [ex["question"] for ex in exs]
     nq = len(qs)
@@ -275,10 +299,18 @@ def sample_and_score(
         else 0
     )
     t_kw = dict(
-        sample=False, latent_length=latent_length, max_new_tokens=max_new_tokens, dropout_p=0.0
+        sample=False,
+        latent_length=latent_length,
+        max_new_tokens=max_new_tokens,
+        dropout_p=0.0,
+        generator_type=generator_type,
     )
     s_kw = dict(
-        sample=True, latent_length=latent_length, max_new_tokens=max_new_tokens, dropout_p=dropout_p
+        sample=True,
+        latent_length=latent_length,
+        max_new_tokens=max_new_tokens,
+        dropout_p=dropout_p,
+        generator_type=generator_type,
     )
     if k2:
         _sync_replica(student, replica)
@@ -370,8 +402,8 @@ def sample_and_score(
     return results
 
 
-def make_batch(tok, question, target_text, max_target_len, device):
-    qenc = tok(question + "\n<|start-latent|>", add_special_tokens=True)
+def make_batch(tok, question, target_text, max_target_len, device, generator_type: str = "coconut"):
+    qenc = tok(latent_prefix(question, generator_type), add_special_tokens=True)
     aenc = tok(target_text, add_special_tokens=False)
     aid = list(aenc["input_ids"][:max_target_len])
     if tok.eos_token_id is not None and (not aid or aid[-1] != tok.eos_token_id):
@@ -551,6 +583,12 @@ def o2_rank_hinge(o2, gold_row, thief_row, *, margin: float):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train_json", default="data/gsm_train.json")
+    ap.add_argument(
+        "--generator_type",
+        choices=["coconut", "codi"],
+        default="coconut",
+        help="student/teacher family; must match --ckpt / --teacher_ckpt",
+    )
     ap.add_argument("--ckpt", default="checkpoints/coconut")
     ap.add_argument("--teacher_ckpt", default="checkpoints/coconut")
     ap.add_argument("--o2_id", default="outputs/latentrm_order_pref/best")
@@ -647,6 +685,8 @@ def main():
         frozen_device = device
     stamp = time.strftime("%Y%m%d_%H%M%S")
     tag = f"P123_k{args.k}_b0s{args.b0_slack:g}"
+    if args.generator_type != "coconut":
+        tag += f"_{args.generator_type}"
     if args.select_mode != "wvote":
         tag += f"_{args.select_mode}"
     if args.sf_mode != "auto":
@@ -676,8 +716,12 @@ def main():
         args.frozen_dtype
     ]
     # 2-card packing: student+O2 on device0; teacher+B0 on frozen_device → parallel gen + parallel score
-    student, tok = load_generator(device, ckpt, trainable=True, dtype=torch.float32)
-    teacher, _ = load_generator(frozen_device, tckpt, trainable=False, dtype=frozen_dtype)
+    student, tok = load_generator(
+        device, ckpt, trainable=True, dtype=torch.float32, generator_type=args.generator_type
+    )
+    teacher, _ = load_generator(
+        frozen_device, tckpt, trainable=False, dtype=frozen_dtype, generator_type=args.generator_type
+    )
     o2 = load_prm(
         o2_id,
         tok,
@@ -695,7 +739,9 @@ def main():
             raise SystemExit("--gen_replica_device must differ from student device")
         if replica_device == frozen_device:
             print("WARN replica==frozen_device: both generate on same card, expect little speedup", flush=True)
-        replica, _ = load_generator(replica_device, ckpt, trainable=False, dtype=frozen_dtype)
+        replica, _ = load_generator(
+            replica_device, ckpt, trainable=False, dtype=frozen_dtype, generator_type=args.generator_type
+        )
         print(f"GEN replica on {replica_device} (k split {args.k}//2)", flush=True)
     gen_tok = AutoTokenizer.from_pretrained(ckpt, padding_side="left")
     if gen_tok.pad_token is None:
@@ -826,6 +872,7 @@ def main():
                         frozen_device=frozen_device,
                         replica=replica, replica_device=replica_device,
                         timing_out=timing_out,
+                        generator_type=args.generator_type,
                     ),
                 )
             )
@@ -899,7 +946,9 @@ def main():
         mmd_src = None
 
         if do_ce:
-            batch, _ = make_batch(tok, q, target, args.max_target_len, device)
+            batch, _ = make_batch(
+                tok, q, target, args.max_target_len, device, generator_type=args.generator_type
+            )
             student.train()
             # Close sample↔backprop gap with C + λ_lat (MSE to selected latents).
             # Do NOT default to SF-B: cached latents are detached and kill g_lat (~99.5% steps in fixseam).
