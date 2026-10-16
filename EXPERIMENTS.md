@@ -115,7 +115,16 @@ SWIFT/HSRM 对潜轨迹顺序**低于随机**（outcome-only 训练，无顺序�
 
 > 注意：B0/O2 是 COCONUT latent 上训的权重，对 CODI 是零样本迁移；公平对比须标「是否在 CODI latent 重训/校准」，否则不算同条件。`CODIp2+B0` = 测试时换 scorer，非独立于 O2 的训练消融（p2 训练用过 O2 门控）。
 
-**产物：** `tables/scorer_axis_3seed.json`（机器可读）、`tables/SCORER_AXIS_REPORT.md`（完整汇报）、`tables/order_metric_comparison.tsv`、`tables/paired_o2_vs_lightweight.tsv`、`tables/gate_ablation_summary.tsv`。代码：`src/lightweight_scorers.py`、`scripts/train_lightweight_scorer.py`、`scripts/eval_lightweight_scorers.sh`、`scripts/eval_order_lightweight.py`、`scripts/paired_multi_scorer.py`、`scripts/gate_ablation.sh`、`scripts/train_p123_system.py --selector_family`。
+**核心结论 5（Order-Decision 受控实验，2026-10-16 晚）：** 构造「内容/答案相同、仅顺序不同」的候选池，让顺序感知成为唯一判据（详见 `tables/order_decision/ORDER_DECISION_REPORT.md`）：
+- O2 首次把机制优势**转化为下游决策**：`strict_win@N16`（chance 6.25%）adjacent 0.96 / segment 0.92 / full_reverse 1.00；`pair_acc` 0.92–1.00。
+- **但 B0（纯 CE）也高**（adjacent 0.30 / segment 0.76 / full 0.97）→ 顺序感知**主要来自表征/骨干**（吃整轨迹的 GPT-2），SWIFT/HSRM 的顺序盲来自**置换不变聚合**，非方法弱。
+- 同表征同骨干下 **O2 > B0**（adjacent `pair_acc` +0.20，CI 排除 0）→ order-pref 损失加可测正增量。
+- SWIFT ≈0.49（大量并列）、HSRM ≈0.38–0.61；`strict_win` SWIFT≈0、HSRM 0.01–0.38。
+- 诚实边界：合成诊断任务，**非** GSM8K 准确率；单 seed。
+- **写作口径**：禁止「O2 top-1 更强」；允许「O2 顺序敏感可测，变现条件是任务需要顺序」；轻量 scorer 定性为**置换不变的常规 BoN 打分器**。
+
+**产物：** `tables/scorer_axis_3seed.json`（机器可读）、`tables/SCORER_AXIS_REPORT.md`（完整汇报）、`tables/order_metric_comparison.tsv`、`tables/paired_o2_vs_lightweight.tsv`、`tables/gate_ablation_summary.tsv`、`tables/CONDITION_ALIGNMENT_AUDIT.md`、`tables/paired_ranking_*.tsv`、`tables/order_decision/*`。代码：`src/lightweight_scorers.py`、`scripts/train_lightweight_scorer.py`、`scripts/eval_lightweight_scorers.sh`、`scripts/eval_order_lightweight.py`、`scripts/paired_multi_scorer.py`、`scripts/paired_ranking_analysis.py`、`scripts/gate_ablation.sh`、`scripts/order_decision_test.py`、`scripts/order_decision_paired.py`、`scripts/run_order_decision_all.sh`、`scripts/train_p123_system.py --selector_family`。
+
 
 ---
 

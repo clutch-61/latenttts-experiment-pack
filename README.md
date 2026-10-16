@@ -262,6 +262,9 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `scripts/paired_multi_scorer.py` | O2 vs 任意挑战者同池配对 + frozen/p2 交互显著性 |
 | `scripts/gate_ablation.sh` | gate 消融（O2-gate vs SWIFT-gate，仅换 selector） |
 | `scripts/paired_ranking_analysis.py` | 逐题配对：同池校验 + top1/auc_cw/mrr + bootstrap CI + McNemar |
+| `scripts/order_decision_test.py` | Order-Decision 受控测试：顺序感知作为唯一判据的池构造与打分 |
+| `scripts/order_decision_paired.py` | Order-Decision 跨模型配对 bootstrap + McNemar |
+| `scripts/run_order_decision_all.sh` | 四模型 × N∈{4,16} 批量运行 |
 | `EXPERIMENTS.md` | 三主实验方案（生成器策略 / 底座泛化 / 打分器对比）与当前状态 |
 | `tables/bon_summary.*` | 全部系统数字摘要 |
 | `tables/scorer_axis_3seed.json` | 打分器轴 3-seed 机器可读摘要 |
@@ -269,6 +272,8 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `tables/CONDITION_ALIGNMENT_AUDIT.md` | 三项可比性检查（条件对齐 / 逐题配对 / 无泄漏） |
 | `tables/condition_alignment.tsv` | 各 scorer 训练条件逐项对照 |
 | `tables/paired_ranking_*.tsv` | 逐题配对排序指标 + bootstrap CI + McNemar |
+| `tables/order_decision/ORDER_DECISION_REPORT.md` | Order-Decision 受控实验报告（顺序感知作为唯一判据） |
+| `tables/order_decision/order_decision_{summary,paired}.tsv` | 四模型 × N∈{4,16} 结果与配对检验 |
 | `tables/baseline_candidate_survey.md` | 外基线调研与计划 |
 
 不含模型权重和逐题采样 JSON（体积过大）。本地完整 dump 在实验机 `results/full/`。
