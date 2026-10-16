@@ -1,0 +1,51 @@
+{
+  "protocol": {
+    "description": "主实验 1：生成器训练策略对比。固定 COCONUT 起点、T=6、奖励模型固定 B0。GSM8K-Test N=16，3 seed 均值。统一 NEW 协议（batch16 / sort_by_len=False）。",
+    "generator_axis": "frozen COCONUT (G0) vs SLPO-RLOO (G3) vs Dropout-GRPO (G4) vs p2mmd05 (G-Ours)",
+    "scorer": "B0 (LatentRM)",
+    "seeds": [42, 43, 44],
+    "N": 16,
+    "budget_note": "G3/G4 各 3000 步（官方 40000/50000 的约 1/15）；num_generations=8 vs p2 k=64。Dropout-GRPO 为同骨干适配版（无 mask replay）。"
+  },
+  "systems": {
+    "frozen_coconut_B0": {
+      "label": "G0 冻结 COCONUT",
+      "per_seed": {"42": 31.69, "43": 33.74, "44": 33.21},
+      "top1_mean": 32.88,
+      "cov_mean": 50.67,
+      "wvote_mean": 33.97,
+      "maj_mean": 33.71
+    },
+    "slpo_rloo_B0": {
+      "label": "G3 SLPO (RLOO) 3000 步",
+      "per_seed": {"42": 32.07, "43": 33.28, "44": 33.28},
+      "top1_mean": 32.88,
+      "cov_mean": 50.90,
+      "wvote_mean": 33.86,
+      "maj_mean": 34.34,
+      "delta_top1_vs_frozen": 0.0,
+      "output": "outputs/ext_slpo_coconut_rloo_b3000/checkpoint-3000"
+    },
+    "dropout_grpo_B0": {
+      "label": "G4 Dropout-GRPO 3000 步（同骨干适配版）",
+      "per_seed": {"42": 31.92, "43": 33.28, "44": 33.36},
+      "top1_mean": 32.85,
+      "cov_mean": 51.23,
+      "wvote_mean": 33.94,
+      "maj_mean": 34.42,
+      "delta_top1_vs_frozen": -0.03,
+      "output": "outputs/ext_dropoutgrpo_coconut_grpo_b3000/checkpoint-3000"
+    },
+    "p2mmd05_B0": {
+      "label": "G-Ours p2mmd05",
+      "per_seed": {"42": 34.04, "43": 34.72, "44": 34.19},
+      "top1_mean": 34.32,
+      "cov_mean": 53.88,
+      "wvote_mean": 35.43,
+      "maj_mean": 36.42,
+      "delta_top1_vs_frozen": 1.44,
+      "output": "outputs/p123_p2mmd05_20261004_215700/model"
+    }
+  },
+  "conclusion": "同 3000 步预算下 SLPO/GRPO 的 B0 Top1 与冻结持平（-0.03~0.00），训练 eval_reward 全程 0.352-0.356 无提升；p2 同预算 +1.44pp。注意 RL 轨迹数天然劣势（num_generations=8 vs k=64），不能当「p2 打赢 SLPO/GRPO 论文分」。"
+}

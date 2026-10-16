@@ -26,13 +26,24 @@
 | G0 | 冻结 COCONUT | 起跑线 | ✅ 全矩阵 |
 | G1 | COCONUT + Standard SFT | 经典范式对照 | ❌ 需训（纯问答 CE，无门控） |
 | G2 | COCONUT + RFT (Self-Training) | 正确轨迹过滤微调 | ❌ 需训（只筛答对样本重训） |
-| G3 | COCONUT + SLPO (RLOO) | 2026 外部强基线 | ⚠️ 公开权重关 gate 已评；同起点同预算训 ❌ |
-| G4 | COCONUT + Dropout-GRPO | 2026 外部强基线 | ❌ 需实现+训 |
+| G3 | COCONUT + SLPO (RLOO) | 2026 外部强基线 | ✅ 同起点同预算（3000 步）已训 |
+| G4 | COCONUT + Dropout-GRPO | 2026 外部强基线 | ✅ 同起点同预算（3000 步）已训（同骨干适配版） |
 | G-Ours | COCONUT + p2（双门控+自强制+MMD） | 本文工作 | ✅ p2mmd05（B0/O2 全矩阵已出） |
 
 **汇报指标：** N=1 Greedy、Coverage@16/64、BoN Top1（接 B0）。
 
-**当前读数（GSM8K）：** G0 Greedy 34.42 / Cov@16 51.10 → G-Ours Greedy 35.18 / Cov@16 52.84。B0 Top1 只动 +0.30（34.04），这正是主实验 1 用无绑定 B0 尺的**预期结果**——p2 的收益要靠 O2 变现（见主实验 3），B0 不「认识」p2 选中的轨迹。
+**当前读数（GSM8K-Test，B0 打分，N=16，3-seed 均值，统一 NEW 协议）：**
+
+| 生成器 | Cov@16 | B0 Top1 | Δ top1 vs G0 |
+|--------|-------:|--------:|-------------:|
+| G0 冻结 COCONUT | 50.67 | 32.88 | — |
+| G3 SLPO (RLOO 3000) | 50.90 | 32.88 | +0.00 |
+| G4 Dropout-GRPO (3000) | 51.23 | 32.85 | −0.03 |
+| **G-Ours p2mmd05** | **53.88** | **34.32** | **+1.44** |
+
+逐 seed top1：G0 = 31.69 / 33.74 / 33.21；G3 = 32.07 / 33.28 / 33.28；G4 = 31.92 / 33.28 / 33.36；G-Ours = 34.04 / 34.72 / 34.19。
+
+**读数解读（诚实口径）：** 同起点、同 3000 步预算下，SLPO(RLOO) 与 Dropout-GRPO 的 B0 Top1 与冻结 COCONUT **持平**（−0.03~+0.00），训练时 `eval_reward` 全程 0.352–0.356 无提升——RL 在该预算下没学到东西；p2 同预算下 +1.44pp。**但注意预算口径不可直接等同**：官方 SLPO/GRPO 为 40000/50000 步，这里压到 3000（约 1/15）；且 RL 每步 `num_generations=8`（128 轨迹/步）远小于 p2 的 `k=64`（1024 轨迹/步）。所以严格结论是「**同 3000 步、RL 轨迹数天然劣势**下的对照」，不能宣传成「p2 打赢 SLPO/GRPO 论文分」。
 
 ---
 
@@ -98,8 +109,9 @@
 **启动顺序（便宜→贵）：**
 1. ✅ 补 B0 评测矩阵、CODIp2+B0 同池（已做）
 2. ✅ 3-seed 同池配对（已做）
-3. G1 SFT / G2 RFT（经典对照，改动最小）
-4. S-Abl BCE 重训（恢复 checkpoint，数字已有）
-5. 冻 CODI 四 scorer 同池、O2/p2 组件消融
-6. 同起点 CODI-SLPO、G4 GRPO（工程量最大）
-7. S2 ELHSR / S3 HSRM（排在正确性过滤之后）
+3. ✅ 同起点同预算 G3 SLPO / G4 Dropout-GRPO 训练 + B0 3-seed 评测（已做，见主实验 1）
+4. G1 SFT / G2 RFT（经典对照，改动最小）
+5. S-Abl BCE 重训（恢复 checkpoint，数字已有）
+6. 冻 CODI 四 scorer 同池、O2/p2 组件消融
+7. 同起点 CODI-SLPO、G4 GRPO 更大预算复跑（若需对齐官方 40000/50000 步）
+8. S2 ELHSR / S3 HSRM（排在正确性过滤之后）

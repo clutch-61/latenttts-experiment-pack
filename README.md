@@ -178,26 +178,35 @@ bash scripts/eval_codi_full_matrix.sh
 
 ---
 
-## 6. 计划加入的基线（尚未出同协议数字）
+## 6. 近期基线：同起点同预算对照（主实验 1）
 
-设计是两个**一维**替换，不是满网格。详情与取舍见 [`tables/baseline_candidate_survey.md`](tables/baseline_candidate_survey.md)。
+生成器轴固定起点 = 冻结 COCONUT、固定 T=6、奖励模型固定 = **B0**。详细规划见 [`EXPERIMENTS.md`](EXPERIMENTS.md) 主实验 1。取舍见 [`tables/baseline_candidate_survey.md`](tables/baseline_candidate_survey.md)。
 
-**生成器轴（奖励模型固定 = B0）**
+**生成器轴（奖励模型固定 = B0，GSM8K-Test N=16，3-seed 均值，统一 NEW 协议）**
 
-| 方法 | 状态 | 说明 |
-|------|------|------|
-| SLPO | **已评** | 关 gate、T=6；见第 4 节 |
-| CODI | **已评** | 冻住 + CODIp2；见第 4–5 节 |
-| Latent-SFT | 计划 | 词表叠加式潜推理，不是 GPT-2 COCONUT；需适配到本协议后再报 |
+| 方法 | Cov@16 | B0 Top1 | Δ vs 冻结 | 状态 |
+|------|-------:|--------:|----------:|------|
+| 冻结 COCONUT (G0) | 50.67 | 32.88 | — | ✅ |
+| SLPO / RLOO (G3) | 50.90 | 32.88 | +0.00 | ✅ 同起点同 3000 步 |
+| Dropout-GRPO (G4) | 51.23 | 32.85 | −0.03 | ✅ 同起点同 3000 步（同骨干适配版） |
+| **p2mmd05 (G-Ours)** | **53.88** | **34.32** | **+1.44** | ✅ |
+
+逐 seed top1：冻结 = 31.69 / 33.74 / 33.21；SLPO = 32.07 / 33.28 / 33.28；GRPO = 31.92 / 33.28 / 33.36；p2mmd05 = 34.04 / 34.72 / 34.19。
+
+**诚实口径（必须写清）：** ① 预算压到 3000 步（官方 SLPO/GRPO 为 40000/50000，约 1/15）；② RL 每步 `num_generations=8`（128 轨迹/步）远小于 p2 的 `k=64`（1024 轨迹/步）——即「同 3000 步、RL 轨迹数天然劣势」的对照，不能当「p2 打赢 SLPO/GRPO 论文分」。③ Dropout-GRPO 用的是 SLPO 仓库的 dropout-GRPO（无 mask replay），称「同骨干适配复现」，非原论文 Qwen2.5-1.5B 严格复现。④ 两者训练 `eval_reward` 全程 0.352–0.356 无提升，B0 Top1 与冻结持平，说明该预算下 RL 没学到东西。机器可读：`tables/generator_axis_3seed.json`。
 
 **奖励模型轴（生成器固定 = 原始 COCONUT）**
 
 | 方法 | 状态 | 说明 |
 |------|------|------|
-| ELHSR / SWIFT (2505.12225) | 计划 | 线性 hidden-state RM；与 HSRM(2608.30841) **不是**同一篇 |
-| GenPRM | 计划 | 文本过程奖励；只能作文本侧对照，不能直接当 LatentRM |
+| Majority Vote (S0) | ✅ | 非学习聚合，同池 maj 列 |
+| B0 / LatentRM (S1) | ✅ | 官方逐步对比 LatentRM |
+| BCE (S-Abl) | ⚠️ | O2 的训练目标消融；数字有（B1 GSM N16=32.15），checkpoint 删，需重训 |
+| O2 (S-Ours) | ✅ | 顺序偏好 |
+| HSRM-Latent (2608.30841) | 计划 | 文本步骤边界 hidden-state 排序器，改 latent 输入 = 适配版，需同池重训，先核实代码再投入 |
+| ELHSR / SWIFT (2505.12225) | 计划 | 线性 hidden-state RM；与 HSRM 不是同一篇 |
 
-**本轮不做 / 不进主表：** PMPS、LTF、RSP、HSRM（缺权重或接口不符）；外方法互相交叉（如 SLPO×ELHSR）；对方论文 Acc 当同协议数字。
+**本轮不做 / 不进主表：** PMPS、LTF、RSP、GenPRM（文本 PRM 与 latent 输入不匹配）；外方法互相交叉（如 SLPO×ELHSR）；对方论文 Acc 当同协议数字；Latent-GRPO（词表混合 latent token，非固定 COCONUT hidden-state recurrence，进相关工作）。
 
 ---
 
