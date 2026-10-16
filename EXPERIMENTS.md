@@ -78,40 +78,53 @@
 |------|--------|------|------|
 | S0 | Majority Vote | 文本答案 | ✅ 同池 maj 列 |
 | S1 | B0 (LatentRM) | 潜变量向量序列 | ✅ |
-| S2 | ELHSR-Latent（=SWIFT，2505.12225） | 潜层隐状态线性奖励 | ❌ 需适配 |
-| S3 | HSRM-Latent（2608.30841） | 步骤边界隐状态 Transformer 排序器 | ❌ 仓空（仅 88B README），需适配 |
+| S2 | ELHSR-Latent（=SWIFT，2505.12225） | 潜层隐状态线性奖励 | ✅ 已适配测评（1.5K 参数） |
+| S3 | HSRM-Latent（2608.30841） | 步骤边界隐状态 Transformer 排序器 | ✅ 已适配测评（1.79M 参数） |
 | S-Abl | BCE Scorer | 潜变量向量序列 | ⚠️ 数字已有（B1 GSM N16=32.15），checkpoint 删、复现需重训 |
 | S-Ours | O2 Scorer | 潜变量向量序列 | ✅ |
 
 **汇报指标：** Top1 Accuracy（主要）、Weighted Vote、Majority Vote。
 
-**当前读数（GSM N16 top1，同池）：**
+**当前读数（GSM N16 top1，同池，3-seed 均值）：**
 
-| 池 | B0 | O2 | O2−B0 |
-|----|----|----|-------|
-| 冻 COCONUT | 31.69 | 32.07 | +0.38 |
-| p2mmd05 | 34.04 | 35.48 | +1.44 |
-| 冻 CODI | 40.03 | 40.94 | +0.91 |
-| CODIp2 | 40.49 | 42.00 | +1.51 |
+| 池 | B0 | O2 | SWIFT-Latent | HSRM-Latent |
+|----|----|----|--------------|-------------|
+| 冻 COCONUT | 32.88 | 33.66 | **34.07** | 33.76 |
+| p2mmd05 | 34.32 | 35.89 | 35.94 | **36.19** |
 
-3-seed 均值（COCONUT）：冻池 +0.78 → p2 池 +1.57（≈2×）。**O2 变现优势在续训后稳定放大**——这是主实验 3 的核心结论。
+**核心结论 1（O2 vs B0）：** 同池 O2−B0 gap 冻池 +0.78 → p2 池 +1.57（≈2×，3 seed 同向）。O2 变现优势在续训后稳定放大。
+
+**核心结论 2（轻量 scorer vs B0）：** SWIFT/HSRM 同样可挑出正确轨迹，且在 p2 池上**比 B0 高 +1.6~+1.9pp**、在冻池高 +0.9~+1.2pp。→ 漂移后掉队的是 **B0**；轻量 scorer 与 O2 同档。
+
+**核心结论 3（O2 vs SWIFT/HSRM，诚实阴性 + 机制轴优势）：** 在排序指标上 O2 **无优势**（top1/voting，N=4/16/64，冻+p2 池，同池配对 CI 全跨 0）；O2 作生成器训练的 gate selector 也**无下游优势**（400 步 × 3 seed，B0 尺 SWIFT-gate +0.68pp 但 CI 跨 0）。O2 的**唯一**确认优势在**顺序/层级机制指标**：
+
+| 模型 | order_pair_acc | hierarchy_consistency |
+|------|---------------:|----------------------:|
+| **O2** | **0.972** | **0.894** |
+| B0 | 0.860 | 0.769 |
+| B1 | 0.766 | 0.728 |
+| SWIFT-Latent | 0.449 | 0.242 |
+| HSRM-Latent | 0.475 | 0.441 |
+
+SWIFT/HSRM 对潜轨迹顺序**低于随机**（outcome-only 训练，无顺序梯度）；O2 接近满分。此优势**未**转化为下游 BoN/gate 收益（该 trainer 的 correctness 由答案抽取判定，scorer 仅需在正确答案间排序，不需要顺序感知）。
 
 > 注意：B0/O2 是 COCONUT latent 上训的权重，对 CODI 是零样本迁移；公平对比须标「是否在 CODI latent 重训/校准」，否则不算同条件。`CODIp2+B0` = 测试时换 scorer，非独立于 O2 的训练消融（p2 训练用过 O2 门控）。
+
+**产物：** `tables/scorer_axis_3seed.json`（机器可读）、`tables/SCORER_AXIS_REPORT.md`（完整汇报）、`tables/order_metric_comparison.tsv`、`tables/paired_o2_vs_lightweight.tsv`、`tables/gate_ablation_summary.tsv`。代码：`src/lightweight_scorers.py`、`scripts/train_lightweight_scorer.py`、`scripts/eval_lightweight_scorers.sh`、`scripts/eval_order_lightweight.py`、`scripts/paired_multi_scorer.py`、`scripts/gate_ablation.sh`、`scripts/train_p123_system.py --selector_family`。
 
 ---
 
 ## 当前缺口与启动顺序
 
 **训练类（重）：**
-- G1 SFT、G2 RFT、G4 Dropout-GRPO（生成器轴，需新实现）
-- S2 ELHSR/SWIFT、S3 HSRM（scorer 轴，需适配）
+- G1 SFT、G2 RFT（生成器轴，需新实现）
 
 **启动顺序（便宜→贵）：**
 1. ✅ 补 B0 评测矩阵、CODIp2+B0 同池（已做）
 2. ✅ 3-seed 同池配对（已做）
 3. ✅ 同起点同预算 G3 SLPO / G4 Dropout-GRPO 训练 + B0 3-seed 评测（已做，见主实验 1）
-4. G1 SFT / G2 RFT（经典对照，改动最小）
-5. S-Abl BCE 重训（恢复 checkpoint，数字已有）
-6. 冻 CODI 四 scorer 同池、O2/p2 组件消融
-7. 同起点 CODI-SLPO、G4 GRPO 更大预算复跑（若需对齐官方 40000/50000 步）
-8. S2 ELHSR / S3 HSRM（排在正确性过滤之后）
+4. ✅ S2 ELHSR/SWIFT、S3 HSRM 适配 + 3-seed 同池评测 + 顺序机制指标 + gate 消融（已做，见主实验 3）
+5. G1 SFT / G2 RFT（经典对照，改动最小）
+6. S-Abl BCE 重训（恢复 checkpoint，数字已有）
+7. 冻 CODI 四 scorer 同池、O2/p2 组件消融
+8. 同起点 CODI-SLPO、G4 GRPO 更大预算复跑（若需对齐官方 40000/50000 步）

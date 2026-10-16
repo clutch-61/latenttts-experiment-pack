@@ -16,6 +16,7 @@ from .generation_mixin import LatentGenerationMixin, LatentGenerationConfig
 from .paths import MODELS
 from .models.gpt2 import COCONUTGPT2ForTokenClassification
 from .models.llama import COCONUTLlamaForTokenClassification
+from .lightweight_scorers import build_lightweight_scorer
 from .system_scoring import aggregate_latent_scores, wvote_select
 from .utils import set_seed, InferenceCollator
 
@@ -31,7 +32,7 @@ def main(
     generator_id: str | None = None,
     model_dtype: Literal["bf16", "fp16", "fp32"] = "fp32",
     prm_id: str = "../../latentRM-coconut",
-    prm_model_family: Literal["llama", "gpt2"] = "gpt2",
+    prm_model_family: Literal["llama", "gpt2", "swift", "hsrm"] = "gpt2",
     prm_mode: Literal["best_of_n", "beam_search"] = "beam_search",
     data_path: str = "data/gsm_test.json",
     num_return_sequences: int = 1,
@@ -116,7 +117,18 @@ def main(
     if generator_type == "coconut":
         load_kw["target_id"] = target_id
     model = LatentGPT2LMHeadModel.from_pretrained(model_id, **load_kw)
-    if prm_model_family == "llama":
+    if prm_model_family in ("swift", "hsrm"):
+        # Lightweight latent scorer checkpoint (torch.save dict from
+        # train_lightweight_scorer.py). Scores latent_thoughts directly.
+        prm_processing_class = processing_class
+        ckpt = torch.load(prm_id, map_location="cpu", weights_only=False)
+        hidden_size = ckpt.get("hidden_size", model.config.hidden_size)
+        model_dim = ckpt.get("model_dim", 256)
+        prm = build_lightweight_scorer(prm_model_family, hidden_size=hidden_size, model_dim=model_dim)
+        prm.load_state_dict(ckpt["state_dict"])
+        prm.to(accelerator.process_index)
+        prm.eval()
+    elif prm_model_family == "llama":
 
         prm_processing_class = AutoTokenizer.from_pretrained(prm_id)
         prm = COCONUTLlamaForTokenClassification.from_pretrained(
@@ -215,21 +227,29 @@ def main(
         else:
             inputs = prm_processing_class(text_output, return_tensors="pt", padding=True)
         if prm_mode == "best_of_n":
-            prm_scores = prm(
-                input_ids=inputs["input_ids"].to(prm.device),
-                attention_mask=inputs["attention_mask"].to(prm.device),
-                latent_embeds=output.latent_thoughts.to(prm.device),
-                return_dict=True,
-            ).logits.squeeze(
-                -1
-            )  # (B * num_samples, seq)
+            if prm_model_family in ("swift", "hsrm"):
+                # Lightweight scorer consumes the latent hidden-state sequence directly.
+                prm_scores = prm(latent_embeds=output.latent_thoughts.float())  # (B*N,)
+                prm_scores = prm_scores.reshape(-1, num_return_sequences)
+                top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
+                prm_scores_cpu = prm_scores.detach().float().cpu()
+                del prm_scores
+            else:
+                prm_scores = prm(
+                    input_ids=inputs["input_ids"].to(prm.device),
+                    attention_mask=inputs["attention_mask"].to(prm.device),
+                    latent_embeds=output.latent_thoughts.to(prm.device),
+                    return_dict=True,
+                ).logits.squeeze(
+                    -1
+                )  # (B * num_samples, seq)
 
-            latent_mask = (inputs["input_ids"] == prm.config.latent_id).to(prm.device)
-            prm_scores = aggregate_latent_scores(prm_scores, latent_mask, reduce=score_reduce)
-            prm_scores = prm_scores.reshape(-1, num_return_sequences)
-            top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
-            prm_scores_cpu = prm_scores.detach().float().cpu()
-            del prm_scores
+                latent_mask = (inputs["input_ids"] == prm.config.latent_id).to(prm.device)
+                prm_scores = aggregate_latent_scores(prm_scores, latent_mask, reduce=score_reduce)
+                prm_scores = prm_scores.reshape(-1, num_return_sequences)
+                top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
+                prm_scores_cpu = prm_scores.detach().float().cpu()
+                del prm_scores
         answer_output = [
             MODELS[generator_type]["answer_extractor"](text_output[i]) for i in range(len(text_output))
         ]

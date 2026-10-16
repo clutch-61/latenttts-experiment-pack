@@ -203,8 +203,14 @@ bash scripts/eval_codi_full_matrix.sh
 | B0 / LatentRM (S1) | ✅ | 官方逐步对比 LatentRM |
 | BCE (S-Abl) | ⚠️ | O2 的训练目标消融；数字有（B1 GSM N16=32.15），checkpoint 删，需重训 |
 | O2 (S-Ours) | ✅ | 顺序偏好 |
-| HSRM-Latent (2608.30841) | 计划 | 文本步骤边界 hidden-state 排序器，改 latent 输入 = 适配版，需同池重训，先核实代码再投入 |
-| ELHSR / SWIFT (2505.12225) | 计划 | 线性 hidden-state RM；与 HSRM 不是同一篇 |
+| HSRM-Latent (2608.30841) | ✅ 已适配 | 2 层 Transformer（~1.79M 参数）吃 latent 序列；同池 3-seed 已跑 |
+| ELHSR / SWIFT (2505.12225) | ✅ 已适配 | Linear(768,2)+gate（~1.5K 参数）；同池 3-seed 已跑 |
+
+**同池 top1（GSM-Test N=16，3-seed，frozen / p2）：** B0 = 32.88 / 34.32；O2 = 33.66 / 35.89；**SWIFT = 34.07 / 35.94**；**HSRM = 33.76 / 36.19**。轻量 scorer ≥ O2 ≥ B0（±0.5pp 带内）。
+
+**顺序/层级机制指标（valid-64，corrects=1）：** O2 0.972 / 0.894 ≫ B0 0.860 / 0.769 ≫ SWIFT 0.449 / 0.242、HSRM 0.475 / 0.441（后两者低于随机）。
+
+**诚实结论：** O2 相对 SWIFT/HSRM 在 BoN/voting/gate 上**无优势**（同池配对 CI 跨 0；gate 消融 400 步 × 3 seed 亦无优势）。O2 的**唯一确认优势**在顺序/层级机制指标，且**未**传导为下游收益。机器可读：`tables/scorer_axis_3seed.json`；完整汇报：`tables/SCORER_AXIS_REPORT.md`。
 
 **本轮不做 / 不进主表：** PMPS、LTF、RSP、GenPRM（文本 PRM 与 latent 输入不匹配）；外方法互相交叉（如 SLPO×ELHSR）；对方论文 Acc 当同协议数字；Latent-GRPO（词表混合 latent token，非固定 COCONUT hidden-state recurrence，进相关工作）。
 
@@ -249,8 +255,16 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `scripts/train_eval_codi_p2mmd05.sh` | CODIp2 训练 + GSM N16 杀伤评测 |
 | `scripts/eval_matrix_generic.sh` | 通用同协议矩阵：任意生成器 × 任意打分器，GSM/Hard/MA × N=4/16/64 |
 | `scripts/eval_pair_gsm16_seed.sh` | 同池配对：同一生成器 + seed，跑 B0/O2 两遍（cov/maj 全等确认同池） |
+| `src/lightweight_scorers.py` | SWIFT-Latent / HSRM-Latent 轻量潜空间打分器实现 |
+| `scripts/train_lightweight_scorer.py` | 轻量 scorer 训练（BCE on outcome，可选 RAM preload） |
+| `scripts/eval_lightweight_scorers.sh` | 轻量 scorer BoN N=16 3-seed 评测 |
+| `scripts/eval_order_lightweight.py` | 轻量 scorer 顺序/层级机制指标 |
+| `scripts/paired_multi_scorer.py` | O2 vs 任意挑战者同池配对 + frozen/p2 交互显著性 |
+| `scripts/gate_ablation.sh` | gate 消融（O2-gate vs SWIFT-gate，仅换 selector） |
 | `EXPERIMENTS.md` | 三主实验方案（生成器策略 / 底座泛化 / 打分器对比）与当前状态 |
 | `tables/bon_summary.*` | 全部系统数字摘要 |
+| `tables/scorer_axis_3seed.json` | 打分器轴 3-seed 机器可读摘要 |
+| `tables/SCORER_AXIS_REPORT.md` | 打分器轴完整汇报（四轴证据） |
 | `tables/baseline_candidate_survey.md` | 外基线调研与计划 |
 
 不含模型权重和逐题采样 JSON（体积过大）。本地完整 dump 在实验机 `results/full/`。

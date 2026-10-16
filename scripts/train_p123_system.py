@@ -34,6 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.generation_mixin import LatentGenerationMixin, LatentGenerationConfig  # noqa: E402
+from src.lightweight_scorers import build_lightweight_scorer  # noqa: E402
 from src.paths import MODELS  # noqa: E402
 from src.sf_rollout import RolloutBatch, sf_train_step  # noqa: E402
 from src.system_scoring import load_prm, sum_logit_score, wvote_select  # noqa: E402
@@ -177,6 +178,50 @@ def prm_scores_from_texts(prm, prm_tok, texts, latents, device, chunk):
     return torch.cat(scores).tolist()
 
 
+def load_lightweight_selector(ckpt_path: str, device, *, family: str):
+    """Load a SWIFT-Latent / HSRM-Latent checkpoint for use as the gating scorer."""
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    hidden_size = ckpt.get("hidden_size", 768)
+    model_dim = ckpt.get("model_dim", 256)
+    sc = build_lightweight_scorer(family, hidden_size=hidden_size, model_dim=model_dim)
+    sc.load_state_dict(ckpt["state_dict"])
+    sc.to(device)
+    sc.eval()
+    for p in sc.parameters():
+        p.requires_grad_(False)
+    return sc
+
+
+@torch.no_grad()
+def lightweight_scores(scorer, latents, device, chunk):
+    """Per-trajectory scores from a lightweight latent scorer (no text input)."""
+    _set_cuda(device)
+    latents = latents.to(device=device, dtype=torch.float32)
+    scores = []
+    for s in range(0, latents.size(0), chunk):
+        out = scorer(latent_embeds=latents[s : s + chunk])
+        scores.append(out.detach().float().cpu())
+    return torch.cat(scores).tolist()
+
+
+def _zscore_groups(vals, nq, k):
+    """Per-question z-score over the k student rows + 1 teacher row.
+
+    Makes margins comparable across scorers with different score scales
+    (GPT2 sum-logit vs SWIFT/HSRM logits). Teacher rows are the last nq entries.
+    """
+    out = [0.0] * len(vals)
+    for qi in range(nq):
+        idxs = [qi * k + j for j in range(k)] + [nq * k + qi]
+        xs = [float(vals[i]) for i in idxs]
+        m = sum(xs) / len(xs)
+        var = sum((x - m) ** 2 for x in xs) / max(len(xs) - 1, 1)
+        sd = math.sqrt(var) if var > 0 else 1.0
+        for i, x in enumerate(xs):
+            out[idxs[i]] = (x - m) / sd
+    return out
+
+
 @torch.no_grad()
 def generate_batch(
     model,
@@ -274,6 +319,8 @@ def sample_and_score(
     replica_device=None,
     timing_out=None,
     generator_type: str = "coconut",
+    selector_family: str = "gpt2",
+    score_norm: str = "raw",
 ):
     """Returns per-question (rows, teacher_tuple) for a batch of questions.
 
@@ -350,17 +397,25 @@ def sample_and_score(
             dim=0,
         )
         with ThreadPoolExecutor(max_workers=2) as pool:
-            fut_o2 = pool.submit(prm_scores_from_texts, o2, prm_tok, texts, lats_o2, o2_dev, chunk)
+            if selector_family in ("swift", "hsrm"):
+                fut_o2 = pool.submit(lightweight_scores, o2, lats_o2, o2_dev, chunk)
+            else:
+                fut_o2 = pool.submit(prm_scores_from_texts, o2, prm_tok, texts, lats_o2, o2_dev, chunk)
             fut_b0 = pool.submit(prm_scores_from_texts, b0, prm_tok, texts, lats_b0, b0_dev, chunk)
             sc_o2 = fut_o2.result()
             sc_b0 = fut_b0.result()
     else:
-        sc_o2 = prm_scores_from_texts(o2, prm_tok, texts, lats_o2, o2_dev, chunk)
+        if selector_family in ("swift", "hsrm"):
+            sc_o2 = lightweight_scores(o2, lats_o2, o2_dev, chunk)
+        else:
+            sc_o2 = prm_scores_from_texts(o2, prm_tok, texts, lats_o2, o2_dev, chunk)
         sc_b0 = (
             prm_scores_from_texts(b0, prm_tok, texts, lats_o2, o2_dev, chunk)
             if b0 is not None
             else [None] * len(texts)
         )
+    if score_norm == "zscore":
+        sc_o2 = _zscore_groups(sc_o2, nq, k)
     n_s = len(s_text)
     s_lat_cpu = s_lat.detach().float().cpu()
     t_lat_cpu = t_lat.detach().float().cpu()
@@ -593,6 +648,20 @@ def main():
     ap.add_argument("--teacher_ckpt", default="checkpoints/coconut")
     ap.add_argument("--o2_id", default="outputs/latentrm_order_pref/best")
     ap.add_argument("--b0_id", default="outputs/latentrm_baseline/best")
+    ap.add_argument(
+        "--selector_family",
+        choices=["gpt2", "swift", "hsrm"],
+        default="gpt2",
+        help="Scorer family used as the gating selector. gpt2=O2 (default behaviour). "
+        "swift/hsrm = lightweight latent scorers (gate ablation).",
+    )
+    ap.add_argument(
+        "--score_norm",
+        choices=["raw", "zscore"],
+        default="raw",
+        help="raw=legacy margins. zscore=per-question z-score of the selector scores "
+        "(needed to compare gpt2 vs swift/hsrm on the same margin scale).",
+    )
     ap.add_argument("--outdir", default=None)
     ap.add_argument("--max_steps", type=int, default=1500)
     ap.add_argument("--k", type=int, default=16)
@@ -703,6 +772,10 @@ def main():
         tag += f"_mmd{args.lambda_mmd:g}"
     if args.lambda_rank > 0:
         tag += f"_rk{args.lambda_rank:g}"
+    if args.selector_family != "gpt2":
+        tag += f"_sel{args.selector_family}"
+    if args.score_norm != "raw":
+        tag += f"_{args.score_norm}"
     outdir = Path(args.outdir or f"outputs/p123_{tag}_{stamp}")
     outdir.mkdir(parents=True, exist_ok=True)
     mid_path = outdir / "mid_metrics.jsonl"
@@ -728,6 +801,8 @@ def main():
         device,
         dtype=torch.float32 if args.lambda_rank > 0 else frozen_dtype,
         trainable=args.lambda_rank > 0,
+    ) if args.selector_family == "gpt2" else load_lightweight_selector(
+        o2_id, device, family=args.selector_family
     )
     if args.lambda_rank > 0:
         o2.eval()  # dropout off for k-pool scoring; train() only on rank forward
@@ -873,6 +948,8 @@ def main():
                         replica=replica, replica_device=replica_device,
                         timing_out=timing_out,
                         generator_type=args.generator_type,
+                        selector_family=args.selector_family,
+                        score_norm=args.score_norm,
                     ),
                 )
             )

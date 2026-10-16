@@ -1,0 +1,156 @@
+{
+  "protocol": "GSM8K-Test, BoN N=16, top1, same candidate pool (answers_sha1 verified), seeds 42/43/44",
+  "frozen_pool": {
+    "B0": {
+      "top1_mean": 32.8785,
+      "top1_std": 1.0623,
+      "voting_mean": 33.7124,
+      "seeds": [
+        31.6907,
+        33.7377,
+        33.207
+      ]
+    },
+    "O2": {
+      "top1_mean": 33.6618,
+      "top1_std": 1.3835,
+      "voting_mean": 33.7124,
+      "seeds": [
+        32.0697,
+        34.5716,
+        34.3442
+      ]
+    },
+    "SWIFT": {
+      "top1_mean": 34.0662,
+      "top1_std": 0.4932,
+      "voting_mean": 33.7124,
+      "seeds": [
+        33.5861,
+        34.5716,
+        34.0409
+      ]
+    },
+    "HSRM": {
+      "top1_mean": 33.763,
+      "top1_std": 1.0096,
+      "voting_mean": 33.7124,
+      "seeds": [
+        32.6005,
+        34.42,
+        34.2684
+      ]
+    }
+  },
+  "p2_pool": {
+    "B0": {
+      "top1_mean": 34.3189,
+      "top1_std": 0.3583,
+      "voting_mean": 36.4165,
+      "seeds": [
+        34.0409,
+        34.7233,
+        34.1926
+      ]
+    },
+    "O2": {
+      "top1_mean": 35.8858,
+      "top1_std": 0.3816,
+      "voting_mean": 36.4165,
+      "seeds": [
+        35.4814,
+        35.9363,
+        36.2396
+      ]
+    },
+    "SWIFT": {
+      "top1_mean": 35.9363,
+      "top1_std": 0.2733,
+      "voting_mean": 36.4165,
+      "seeds": [
+        36.1638,
+        35.6331,
+        36.0121
+      ]
+    },
+    "HSRM": {
+      "top1_mean": 36.189,
+      "top1_std": 0.3502,
+      "voting_mean": 36.4165,
+      "seeds": [
+        36.3912,
+        35.7847,
+        36.3912
+      ]
+    }
+  },
+  "sequential_metric": {
+    "protocol": "valid-64 full, corrects=1 (n=7021), permutation corruptions",
+    "O2": {
+      "order_pair_acc": 0.9718,
+      "hierarchy_consistency": 0.8936
+    },
+    "B0": {
+      "order_pair_acc": 0.86,
+      "hierarchy_consistency": 0.7695
+    },
+    "B1": {
+      "order_pair_acc": 0.766,
+      "hierarchy_consistency": 0.7284
+    },
+    "SWIFT": {
+      "order_pair_acc": 0.4487,
+      "hierarchy_consistency": 0.2416
+    },
+    "HSRM": {
+      "order_pair_acc": 0.4751,
+      "hierarchy_consistency": 0.4414
+    }
+  },
+  "paired_gap_pp": {
+    "note": "3-seed mean of same-pool A-B top1 gap",
+    "O2_minus_B0": {
+      "frozen": 0.78,
+      "p2": 1.57
+    },
+    "O2_minus_SWIFT": {
+      "frozen": -0.4,
+      "p2": -0.05
+    },
+    "O2_minus_HSRM": {
+      "frozen": -0.1,
+      "p2": -0.3
+    },
+    "SWIFT_minus_B0": {
+      "frozen": 1.19,
+      "p2": 1.62
+    },
+    "HSRM_minus_B0": {
+      "frozen": 0.89,
+      "p2": 1.87
+    }
+  },
+  "gate_ablation": {
+    "protocol": "400 steps, k=32, lambda_mmd=0, only gate selector changes, 3 seeds, GSM8K-Test N=16",
+    "o2_gate": {
+      "B0_ruler": 32.8,
+      "O2_ruler": 34.34,
+      "voting": 35.18
+    },
+    "swift_gate": {
+      "B0_ruler": 33.48,
+      "O2_ruler": 34.52,
+      "voting": 35.15
+    },
+    "paired_swift_minus_o2_B0ruler_pp": [
+      0.83,
+      0.38,
+      0.83
+    ],
+    "verdict": "O2 gate has no downstream advantage"
+  },
+  "conclusion": {
+    "vs_B0": "O2 has a small but real advantage (p2 +1.57pp, paired)",
+    "vs_lighweight": "no advantage on BoN/voting/gate; only the order/hierarchy mechanism axis"
+  }
+}
