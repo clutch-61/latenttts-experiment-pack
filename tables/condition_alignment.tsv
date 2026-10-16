@@ -1,0 +1,16 @@
+property	O2	B0	SWIFT	HSRM
+train_split	latent-data/coconut/train (from data/gsm_train.json)	latent-data/coconut/train	latent-data/coconut/train	latent-data/coconut/train
+train_prompts	135597	135597	135597	135597
+train_trajectories	1084776 (per-traj BCE)	135597 groups x8 (CE)	1084776 (per-traj BCE)	1084776 (per-traj BCE)
+correctness_labels	same `corrects` from annotation	same	same	same
+task_loss	BCE on corrects + 0.5*order/hier pref	CE (group)	BCE on corrects	BCE on corrects
+input_representation	full token trajectory + 6 latent embeds via GPT-2	(same)	latent steps only (6x768)	latent steps only (6x768)
+backbone	COCONUTGPT2 12L/768 (pretrained, 124M)	(same)	random-init Linear(768,2)	random-init 2L Transformer(256)
+params	124442881	124442881	1538	1793025
+learning_rate	1e-4	1e-4	1e-3	1e-3
+effective_batch	128x4 (multi-GPU)	2048	4096	2048
+epochs_budget	20 max	30 max	10	10
+epochs_actually_run	6.78 (3591 steps, early stop)	8.95 (1190 steps, early stop)	10 (best @ epoch 2)	10 (best @ epoch 1)
+model_selection_metric	valid-64 recall@1	valid-64 recall@1	valid-64 top1	valid-64 top1
+tuning_budget	1 locked config; margin calibration left as TODO	1 upstream config	1 config, no sweep	1 config, no sweep
+eval_pool	frozen + p2 (sha1-verified same as others)	same	same	same

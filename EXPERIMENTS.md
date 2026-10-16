@@ -108,6 +108,11 @@
 
 SWIFT/HSRM 对潜轨迹顺序**低于随机**（outcome-only 训练，无顺序梯度）；O2 接近满分。此优势**未**转化为下游 BoN/gate 收益（该 trainer 的 correctness 由答案抽取判定，scorer 仅需在正确答案间排序，不需要顺序感知）。
 
+**核心结论 4（可比性审计，2026-10-16 晚）：** 三项针对性检查（详见 `tables/CONDITION_ALIGNMENT_AUDIT.md`）：
+1. **条件不对齐**：训练**数据**对齐（同划分/同池/同 `corrects`），但 O2 是 **124M、吃整条轨迹的预训练 GPT-2**，SWIFT/HSRM 是**随机初始化、只看 6 个潜步**的小模型（1.5K / 1.8M 参数，差 ~10³–10⁵×）→ 主表名次**不能**当方法优劣读。
+2. **逐题配对（Top1 之外）**：`top1 / top1_ach / mrr` 上 O2 vs SWIFT/HSRM **全部 CI 跨 0**；但**正确-错误配对排序 `auc_cw`** 上 **O2 逐 seed 6/6 同号为更高**（frozen O2−SWIFT **+2.63pp [0.20, 5.07] 显著**；p2 +2.41pp 边缘；对 HSRM +1.9pp 不显著）→ O2 提升了对/错区分度，但未稳定转为 top-1。
+3. **无 test 泄漏**：train/valid/test 两两问题级重叠 = 0；选模型只用 valid-64；机制指标也在 valid 上算。配置里 `test_n_64` 是 valid-64 的历史命名。
+
 > 注意：B0/O2 是 COCONUT latent 上训的权重，对 CODI 是零样本迁移；公平对比须标「是否在 CODI latent 重训/校准」，否则不算同条件。`CODIp2+B0` = 测试时换 scorer，非独立于 O2 的训练消融（p2 训练用过 O2 门控）。
 
 **产物：** `tables/scorer_axis_3seed.json`（机器可读）、`tables/SCORER_AXIS_REPORT.md`（完整汇报）、`tables/order_metric_comparison.tsv`、`tables/paired_o2_vs_lightweight.tsv`、`tables/gate_ablation_summary.tsv`。代码：`src/lightweight_scorers.py`、`scripts/train_lightweight_scorer.py`、`scripts/eval_lightweight_scorers.sh`、`scripts/eval_order_lightweight.py`、`scripts/paired_multi_scorer.py`、`scripts/gate_ablation.sh`、`scripts/train_p123_system.py --selector_family`。

@@ -152,5 +152,125 @@
   "conclusion": {
     "vs_B0": "O2 has a small but real advantage (p2 +1.57pp, paired)",
     "vs_lighweight": "no advantage on BoN/voting/gate; only the order/hierarchy mechanism axis"
+  },
+  "condition_alignment": {
+    "verdict": "train DATA aligned (same split/pool/labels); representation+capacity+backbone NOT aligned -> ranks are not method-quality",
+    "params": {
+      "O2": 124442881,
+      "B0": 124442881,
+      "SWIFT": 1538,
+      "HSRM": 1793025
+    },
+    "input": {
+      "O2": "full token trajectory + 6 latent via GPT-2 124M",
+      "SWIFT/HSRM": "latent steps only (6x768), random-init"
+    },
+    "selection_metric": {
+      "O2/B0": "valid-64 recall@1",
+      "SWIFT/HSRM": "valid-64 top1"
+    },
+    "tuning_budget": {
+      "SWIFT": "1 config, no sweep",
+      "HSRM": "1 config, no sweep"
+    }
+  },
+  "paired_ranking_crossseed_pp": {
+    "note": "3-seed per-question average, paired bootstrap over 1319 questions, 95% CI",
+    "frozen": {
+      "O2-SWIFT": {
+        "top1": [
+          -0.4,
+          -1.54,
+          0.76
+        ],
+        "auc_cw": [
+          2.63,
+          0.2,
+          5.07
+        ],
+        "mrr": [
+          -0.23,
+          -1.08,
+          0.6
+        ]
+      },
+      "O2-HSRM": {
+        "top1": [
+          -0.1,
+          -1.16,
+          0.99
+        ],
+        "auc_cw": [
+          1.86,
+          -0.5,
+          4.19
+        ]
+      },
+      "O2-B0": {
+        "top1": [
+          0.78,
+          -0.15,
+          1.74
+        ],
+        "auc_cw": [
+          2.06,
+          -0.47,
+          4.59
+        ]
+      }
+    },
+    "p2": {
+      "O2-SWIFT": {
+        "top1": [
+          -0.05,
+          -1.21,
+          1.09
+        ],
+        "auc_cw": [
+          2.41,
+          -0.04,
+          4.89
+        ]
+      },
+      "O2-HSRM": {
+        "top1": [
+          -0.3,
+          -1.44,
+          0.81
+        ],
+        "auc_cw": [
+          1.9,
+          -0.47,
+          4.25
+        ]
+      },
+      "O2-B0": {
+        "top1": [
+          1.57,
+          0.53,
+          2.63
+        ],
+        "top1_ach": [
+          2.04,
+          0.06,
+          3.98
+        ],
+        "mrr": [
+          1.33,
+          0.5,
+          2.16
+        ]
+      }
+    }
+  },
+  "leakage_audit": {
+    "splits_disjoint": true,
+    "train": "data/gsm_train.json",
+    "valid": "data/gsm_valid.json (500 q)",
+    "test": "data/gsm_test.json (1319 q)",
+    "selection_on": "valid-64 only",
+    "mechanism_metrics_on": "valid-4/valid-64",
+    "test_used_for": "final BoN report only",
+    "note": "config key 'test_n_64' is a legacy name for valid-64, not GSM8K test"
   }
 }

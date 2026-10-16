@@ -8,10 +8,10 @@
 
 ## 0. 一句话结论
 
-- **相对 B0**：O2 有真实但温和的优势（p2 池 +1.57pp，配对显著）。
-- **相对 SWIFT/HSRM**：O2 在 **BoN / voting / gate→下游** 上**全部打平或略输**；
-  唯一完胜的轴是 **order/hierarchy 机制指标**，且**无下游转化证据**。
-- SWIFT/HSRM 作为**廉价推理期 scorer**（与 O2 打平、优于 B0、参数量少 ~1000×）可用。
+- **相对 B0**：O2 有真实但温和的优势（p2 池 top1 +1.57pp，配对显著）。
+- **相对 SWIFT/HSRM**：`top1 / top1_ach / mrr` 均**无显著差异**（配对 CI 全跨 0）；但**正确-错误配对排序 `auc_cw` 上 O2 同号一致 +2–3pp**（frozen 对 SWIFT 显著、对 HSRM 不显著）——这是 Top1 掩盖的、唯一稳定的正向信号。
+- **可比性警告（关键）**：O2 是 124M、吃整条轨迹的预训练 GPT-2 RM；SWIFT/HSRM 是随机初始化、只看 6 个潜步的小模型（1.5K / 1.8M 参数）。**条件不对齐 → 名次不能当方法优劣读**。详见 `CONDITION_ALIGNMENT_AUDIT.md`。
+- SWIFT/HSRM 作为**廉价推理期 scorer**（参数量少 ~10³–10⁵×、与 O2 打平）可用。
 
 ---
 
@@ -96,6 +96,23 @@ O2 − SWIFT/HSRM = **+0.50~0.52 (pair) / +0.45~0.65 (hier)**。
 
 ---
 
+## 6. 可比性审计修订（2026-10-16 晚）
+
+用户要求三项针对性检查，完整报告见 `CONDITION_ALIGNMENT_AUDIT.md`。对上面结论的修订：
+
+1. **条件不对齐（推翻「名次=方法优劣」）**：训练**数据**对齐（同划分/同池/同 `corrects`），但 O2 相对 SWIFT/HSRM 的**输入表征、骨干、参数量、调参预算**全不对齐（124M 预训练吃整轨迹 vs 随机初始化只看 6 潜步、1.5K/1.8M 参数）。→ §1 的「SWIFT/HSRM 略高」**不能**读成方法更强。
+
+2. **Top1 之外的配对指标（新增 auc_cw）**：逐题配对（同池 sha1 校验 6/6）显示
+   - `top1 / top1_ach / mrr`：O2 vs SWIFT/HSRM **全部 CI 跨 0**（无显著差异）。
+   - `auc_cw`（正确候选 vs 错误候选配对排序）：**O2 逐 seed 6/6 同号为更高**，frozen 池 O2−SWIFT **+2.63pp [0.20, 5.07]（显著）**，p2 池 +2.41pp（边缘）；对 HSRM +1.9pp（不显著）。
+   - 即：O2 的 order 训练**提升了对/错区分度**，但**未**稳定转化为 top-1 / MRR。
+
+3. **无 test 泄漏**：train/valid/test 三套问题两两重叠 = 0；选模型只用 valid-64；机制指标也在 valid 上算。配置里 `test_n_64` 是 valid-64 的历史遗留命名。
+
+**修订后的净结论**：O2 相对轻量 scorer 的优势 **不是**「top1 更高」，而是 (a) 机制指标（order/hierarchy，决定性）与 (b) 正确-错误配对排序 `auc_cw`（小、同号一致、部分显著）；且因条件严重不对齐，主表名次只能当「廉价 scorer 追平大模型」的证据，不能当方法优劣排序。
+
+---
+
 ## 产物清单
 
 | 文件 | 内容 |
@@ -104,4 +121,11 @@ O2 − SWIFT/HSRM = **+0.50~0.52 (pair) / +0.45~0.65 (hier)**。
 | `order_metric_comparison.tsv` | 机制指标 5 模型 |
 | `paired_o2_vs_lightweight.tsv` | 同池配对 gap 矩阵 |
 | `../gate_ablation/gate_ablation_summary.tsv` | gate 消融 3-seed |
+| `CONDITION_ALIGNMENT_AUDIT.md` | 三项检查完整报告（条件对齐 / 逐题配对 / 无泄漏） |
+| `condition_alignment.tsv` | 各 scorer 训练条件逐项对照 |
+| `paired_ranking_stats.tsv` | 逐 (池,seed,scorer) top1/top1_ach/auc_cw/mrr/cov |
+| `paired_ranking_pairs.tsv` | 逐 seed 配对 Δ + bootstrap CI + McNemar |
+| `paired_ranking_crossseed.tsv` | 3-seed 逐题平均汇总 |
+| `paired_ranking_crossseed_pairs.tsv` | 跨 seed 配对 bootstrap CI |
+| `../../scripts/paired_ranking_analysis.py` | 上述配对分析脚本 |
 | `../../PLAN.md` | 全部决策与坑记录 |

@@ -210,7 +210,7 @@ bash scripts/eval_codi_full_matrix.sh
 
 **顺序/层级机制指标（valid-64，corrects=1）：** O2 0.972 / 0.894 ≫ B0 0.860 / 0.769 ≫ SWIFT 0.449 / 0.242、HSRM 0.475 / 0.441（后两者低于随机）。
 
-**诚实结论：** O2 相对 SWIFT/HSRM 在 BoN/voting/gate 上**无优势**（同池配对 CI 跨 0；gate 消融 400 步 × 3 seed 亦无优势）。O2 的**唯一确认优势**在顺序/层级机制指标，且**未**传导为下游收益。机器可读：`tables/scorer_axis_3seed.json`；完整汇报：`tables/SCORER_AXIS_REPORT.md`。
+**诚实结论：** O2 相对 SWIFT/HSRM 在 top1 / top1_ach / mrr 上**无显著差异**（同池配对 CI 跨 0；gate 消融 400 步 × 3 seed 亦无优势）。但**正确-错误配对排序 `auc_cw`** 上 O2 逐 seed **6/6 同号更高**（frozen O2−SWIFT +2.63pp [0.20,5.07] 显著；p2 +2.41pp 边缘）；机制指标亦 O2 完胜。**可比性警告**：O2 为 124M 吃整轨迹的预训练 GPT-2，SWIFT/HSRM 为随机初始化只看 6 潜步的小模型（1.5K/1.8M 参数）→ 名次不能当方法优劣。机器可读：`tables/scorer_axis_3seed.json`；完整汇报：`tables/SCORER_AXIS_REPORT.md`；可比性审计：`tables/CONDITION_ALIGNMENT_AUDIT.md`。
 
 **本轮不做 / 不进主表：** PMPS、LTF、RSP、GenPRM（文本 PRM 与 latent 输入不匹配）；外方法互相交叉（如 SLPO×ELHSR）；对方论文 Acc 当同协议数字；Latent-GRPO（词表混合 latent token，非固定 COCONUT hidden-state recurrence，进相关工作）。
 
@@ -261,10 +261,14 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `scripts/eval_order_lightweight.py` | 轻量 scorer 顺序/层级机制指标 |
 | `scripts/paired_multi_scorer.py` | O2 vs 任意挑战者同池配对 + frozen/p2 交互显著性 |
 | `scripts/gate_ablation.sh` | gate 消融（O2-gate vs SWIFT-gate，仅换 selector） |
+| `scripts/paired_ranking_analysis.py` | 逐题配对：同池校验 + top1/auc_cw/mrr + bootstrap CI + McNemar |
 | `EXPERIMENTS.md` | 三主实验方案（生成器策略 / 底座泛化 / 打分器对比）与当前状态 |
 | `tables/bon_summary.*` | 全部系统数字摘要 |
 | `tables/scorer_axis_3seed.json` | 打分器轴 3-seed 机器可读摘要 |
 | `tables/SCORER_AXIS_REPORT.md` | 打分器轴完整汇报（四轴证据） |
+| `tables/CONDITION_ALIGNMENT_AUDIT.md` | 三项可比性检查（条件对齐 / 逐题配对 / 无泄漏） |
+| `tables/condition_alignment.tsv` | 各 scorer 训练条件逐项对照 |
+| `tables/paired_ranking_*.tsv` | 逐题配对排序指标 + bootstrap CI + McNemar |
 | `tables/baseline_candidate_survey.md` | 外基线调研与计划 |
 
 不含模型权重和逐题采样 JSON（体积过大）。本地完整 dump 在实验机 `results/full/`。
