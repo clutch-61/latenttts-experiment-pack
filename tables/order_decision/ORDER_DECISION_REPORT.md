@@ -1,8 +1,8 @@
 # Order-Decision Test：让「顺序感知」成为唯一可用信号
 
-日期：2026-10-16 晚（承接三项可比性检查）
-脚本：`scripts/order_decision_test.py` + `scripts/order_decision_paired.py` + `scripts/run_order_decision_all.sh`
-数据：`results/full/order_decision/`（`order_decision_summary.tsv`、`order_decision_paired.tsv`、各模型 `*_N{4,16}_*.npz`）
+日期：2026-10-16 晚（承接三项可比性检查；**2026-10-17 五种子修订**）
+脚本：`scripts/order_decision_test.py` + `scripts/order_decision_paired.py` + `scripts/run_order_decision_all.sh` + `scripts/run_order_decision_seeds.sh`
+数据：`results/full/order_decision/`（单 seed 表 + **`order_decision_{summary,paired}_5seed.tsv`**，破坏 seeds 42–46）
 
 ---
 
@@ -68,7 +68,7 @@
 
 **诚实边界（不要过度解读）：**
 - 这是**合成诊断任务**（同轨迹置换的「轨迹有效性」判别），**不是 GSM8K 推理准确率**；不能推出真实 BoN top-1 会涨。
-- 1000/7021 条正确轨迹、单 seed；配对 CI 已排除 0 但未做多 seed。
+- 1000/7021 条正确轨迹；**已扩到 5 破坏 seed（42–46）**，见 `order_decision_{summary,paired}_5seed.tsv`——方向与单 seed 一致，方差极小（adjacent O2 pair_acc 0.9888±0.0007 / strict_win 0.9564±0.0005）。
 - `multi_segment` 上 O2/B0 都不高（strict_win 0.05）——三块重排后可辨识度低，两者**没有**拉开差距。
 - B1（BCE，同 GPT-2）缺失，无法把「CE vs BCE vs BCE+order」三者完整分离（B1 checkpoint 已删）。
 
