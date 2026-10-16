@@ -4,6 +4,20 @@
 
 本仓库提供：**原始基线**、**自家续训方法（p2mmd05）**，以及按同一协议评测的 **外部生成器（SLPO、CODI）** 和 **在 CODI 上再跑同一套续训（CODIp2）**。权重和完整采样 dump 需自备；数字摘要在 [`tables/`](tables/)。
 
+> 论文主线的三主实验规划见 **[`EXPERIMENTS.md`](EXPERIMENTS.md)**（生成器策略对比 / 底座泛化 / 打分器对比）。
+
+---
+
+## 0. 核心发现（一句话版）
+
+主线不是「单点涨分」，而是 **生成器 ↔ 打分器协同**：
+
+- **生成器（p2mmd05）拓宽探索**：Greedy 34.42 → 35.18（+0.76），Coverage@16 51.10 → 52.84（+1.74）。
+- **打分器（O2）变现探索**：同一批候选池上，O2 相对 B0 的优势在续训后从 +0.78 翻倍到 +1.57（3 seed 同向）。官方对比 LatentRM（B0）变现不了续训新探索出的正确轨迹，顺序偏好 O2 是必要补充。
+- **策略通用**：同一配方在更强的 CODI 底座上依然再 +1.06（CODIp2 40.03 → 42.00 的续训部分）。
+
+严谨口径：只比**同池 O2−B0 gap**，不引用「B0 变现率下降」（那是跨口径混比；严格同池下 B0 变现率基本持平）。详见第 3.1 节与 [`tables/baseline_candidate_survey.md`](tables/baseline_candidate_survey.md)。
+
 ---
 
 ## 1. 系统一览
@@ -59,6 +73,27 @@ B0 = 官方 LatentTTS 逐步对比 LatentRM。O2 = 本仓库的顺序偏好奖�
 
 方法侧对照（同一 p2mmd05+O2：关掉 dropout vs dropout=0.2）见文末附录。
 
+### 3.1 协同证据：探索（生成器）vs 变现（打分器）
+
+表 3 是**系统级**对比（生成器 + 打分器都换）。拆开看两个贡献：
+
+| 生成器读值（无打分器，GSM8K） | 冻 COCONUT | p2mmd05 | Δ |
+|---|---|---|---|
+| Greedy N=1 | 34.42 | 35.18 | +0.76 |
+| Coverage@16 | 51.10 | 52.84 | +1.74 |
+| Coverage@64 | 59.59 | 60.88 | +1.29 |
+
+Coverage 涨了，但 B0 把新增正确轨迹变现成 top1 的能力没有同步跟上；换 O2 后在同池上稳定多变现。同池 O2−B0（GSM N16，3 seed，cov/maj 全等确认同池）：
+
+| seed | 冻池 O2−B0 | p2 池 O2−B0 |
+|---|---|---|
+| 42 | +0.38 | +1.44 |
+| 43 | +0.83 | +1.22 |
+| 44 | +1.13 | +2.05 |
+| 均值 | +0.78 | **+1.57** |
+
+O2 相对 B0 的优势在续训后 ≈2×、3 seed 同向。脚本：`scripts/eval_pair_gsm16_seed.sh`。
+
 ---
 
 ## 4. 外部生成器：SLPO、CODI 原版
@@ -108,9 +143,12 @@ CUDA_VISIBLE_DEVICES=7 bash scripts/eval_ext_codi_b0.sh
 |------|-----:|------:|----:|----:|
 | 冻住 CODI+B0 | 40.03 | 41.09 | 42.46 | 54.66 |
 | 冻住 CODI+O2 | 40.94 | 42.91 | 42.46 | 54.66 |
+| CODIp2+B0 | 40.49 | 41.77 | 42.91 | 54.36 |
 | **CODIp2+O2** | **42.00** | **43.29** | 42.91 | 54.36 |
 
 相对 CODI+B0：**+1.97pp**。其中约一半来自 B0→O2（+0.91），一半来自续训（再 +1.06）。覆盖率几乎不动。N=1 greedy 42.08→42.15，生成器确定性几乎没变。
+
+在 **CODIp2 同池**（cov 54.36 / maj 42.91 全等）上，B0=40.49 → O2=42.00（**+1.51**），与 COCONUT 侧的「O2 变现优势在续训后放大」方向一致：强底座上顺序偏好 O2 依然是变现探索收益的关键。
 
 ### 5.2 CODIp2 全矩阵（关掉 dropout）
 
@@ -200,6 +238,9 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `scripts/eval_ext_codi_b0.sh` | 冻住 CODI+B0 矩阵 |
 | `scripts/eval_codi_full_matrix.sh` | 冻住 CODI+O2 与 CODIp2+O2 全矩阵 |
 | `scripts/train_eval_codi_p2mmd05.sh` | CODIp2 训练 + GSM N16 杀伤评测 |
+| `scripts/eval_matrix_generic.sh` | 通用同协议矩阵：任意生成器 × 任意打分器，GSM/Hard/MA × N=4/16/64 |
+| `scripts/eval_pair_gsm16_seed.sh` | 同池配对：同一生成器 + seed，跑 B0/O2 两遍（cov/maj 全等确认同池） |
+| `EXPERIMENTS.md` | 三主实验方案（生成器策略 / 底座泛化 / 打分器对比）与当前状态 |
 | `tables/bon_summary.*` | 全部系统数字摘要 |
 | `tables/baseline_candidate_survey.md` | 外基线调研与计划 |
 
