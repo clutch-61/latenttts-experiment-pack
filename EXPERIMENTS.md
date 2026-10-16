@@ -85,18 +85,18 @@
 
 **汇报指标：** Top1 Accuracy（主要）、Weighted Vote、Majority Vote。
 
-**当前读数（GSM N16 top1，同池，3-seed 均值）：**
+**当前读数（GSM N16 top1，同池，5-seed 均值 ± std，seeds 42–46）：**
 
 | 池 | B0 | O2 | SWIFT-Latent | HSRM-Latent |
 |----|----|----|--------------|-------------|
-| 冻 COCONUT | 32.88 | 33.66 | **34.07** | 33.76 |
-| p2mmd05 | 34.32 | 35.89 | 35.94 | **36.19** |
+| 冻 COCONUT | 32.72 ± 0.96 | **33.72 ± 1.03** | 33.69 ± 0.75 | 33.60 ± 0.75 |
+| p2mmd05 | 34.44 ± 0.38 | 35.92 ± 0.28 | 35.88 ± 0.48 | **36.06 ± 0.37** |
 
-**核心结论 1（O2 vs B0）：** 同池 O2−B0 gap 冻池 +0.78 → p2 池 +1.57（≈2×，3 seed 同向）。O2 变现优势在续训后稳定放大。
+**核心结论 1（O2 vs B0，5-seed）：** 同池配对 top1：冻池 **+1.00pp [0.17, 1.85] 显著**；p2 池 **+1.49pp [0.59, 2.38] 显著**。O2 变现优势在续训后稳定放大，5 seed 后冻结池也显著。
 
-**核心结论 2（轻量 scorer vs B0）：** SWIFT/HSRM 同样可挑出正确轨迹，且在 p2 池上**比 B0 高 +1.6~+1.9pp**、在冻池高 +0.9~+1.2pp。→ 漂移后掉队的是 **B0**；轻量 scorer 与 O2 同档。
+**核心结论 2（轻量 scorer vs B0）：** SWIFT/HSRM 同样可挑出正确轨迹，且在 p2 池上**比 B0 高 ~1.4–1.6pp**、在冻池高 ~0.9pp。→ 漂移后掉队的是 **B0**；轻量 scorer 与 O2 同档。
 
-**核心结论 3（O2 vs SWIFT/HSRM，诚实阴性 + 机制轴优势）：** 在排序指标上 O2 **无优势**（top1/voting，N=4/16/64，冻+p2 池，同池配对 CI 全跨 0）；O2 作生成器训练的 gate selector 也**无下游优势**（400 步 × 3 seed，B0 尺 SWIFT-gate +0.68pp 但 CI 跨 0）。O2 的**唯一**确认优势在**顺序/层级机制指标**：
+**核心结论 3（O2 vs SWIFT/HSRM，诚实阴性 + 机制轴优势，5-seed）：** top1 上 O2 **无优势**（冻/p2 配对 CI 全跨 0）；gate 消融亦无下游优势（5 seed，B0 尺 SWIFT−O2 **+0.36 ± 0.66**，方向混杂）。但 **`auc_cw`（正确-错误排序）** 上 O2 显著：冻 O2−SWIFT +2.34 [0.12, 4.57]；p2 O2−SWIFT +3.19 [0.89, 5.49]、O2−HSRM +2.70 [0.48, 4.92]。O2 的**机制轴**优势仍在**顺序/层级指标**：
 
 | 模型 | order_pair_acc | hierarchy_consistency |
 |------|---------------:|----------------------:|
@@ -115,13 +115,14 @@ SWIFT/HSRM 对潜轨迹顺序**低于随机**（outcome-only 训练，无顺序�
 
 > 注意：B0/O2 是 COCONUT latent 上训的权重，对 CODI 是零样本迁移；公平对比须标「是否在 CODI latent 重训/校准」，否则不算同条件。`CODIp2+B0` = 测试时换 scorer，非独立于 O2 的训练消融（p2 训练用过 O2 门控）。
 
-**核心结论 5（Order-Decision 受控实验，2026-10-16 晚）：** 构造「内容/答案相同、仅顺序不同」的候选池，让顺序感知成为唯一判据（详见 `tables/order_decision/ORDER_DECISION_REPORT.md`）：
-- O2 首次把机制优势**转化为下游决策**：`strict_win@N16`（chance 6.25%）adjacent 0.96 / segment 0.92 / full_reverse 1.00；`pair_acc` 0.92–1.00。
-- **但 B0（纯 CE）也高**（adjacent 0.30 / segment 0.76 / full 0.97）→ 顺序感知**主要来自表征/骨干**（吃整轨迹的 GPT-2），SWIFT/HSRM 的顺序盲来自**置换不变聚合**，非方法弱。
+**核心结论 5（Order-Decision 受控实验，5-seed）：** 构造「内容/答案相同、仅顺序不同」的候选池，让顺序感知成为唯一判据（详见 `tables/order_decision/`）：
+- O2 首次把机制优势**转化为下游决策**：`strict_win@N16` adjacent ~0.96 / segment ~0.92 / full_reverse 1.00（5 seed，方差极小）。
+- **但 B0（纯 CE）也高** → 顺序感知**主要来自表征/骨干**；SWIFT/HSRM 的顺序盲来自**置换不变聚合**。
 - 同表征同骨干下 **O2 > B0**（adjacent `pair_acc` +0.20，CI 排除 0）→ order-pref 损失加可测正增量。
-- SWIFT ≈0.49（大量并列）、HSRM ≈0.38–0.61；`strict_win` SWIFT≈0、HSRM 0.01–0.38。
-- 诚实边界：合成诊断任务，**非** GSM8K 准确率；单 seed。
-- **写作口径**：禁止「O2 top-1 更强」；允许「O2 顺序敏感可测，变现条件是任务需要顺序」；轻量 scorer 定性为**置换不变的常规 BoN 打分器**。
+- 诚实边界：合成诊断任务，**非** GSM8K 准确率。
+- **写作口径**：禁止「O2 top-1 更强」；允许「O2 顺序敏感可测，变现条件是任务需要顺序」。
+
+**核心结论 6（五种子扩展，2026-10-16）：** 打分器轴相关实验统一种子 `42–46` 全部齐 5/5（BoN N16 冻/p2 ×4 scorer、p2 N64 ×2、Order-Decision、gate 消融、配对分析）。详见 `tables/scorer_axis_5seed/FIVESEED_STATUS.md`。生成器轴 SLPO/GRPO 仍为 3-seed（本轮不动）。
 
 **产物：** `tables/scorer_axis_3seed.json`（机器可读）、`tables/SCORER_AXIS_REPORT.md`（完整汇报）、`tables/order_metric_comparison.tsv`、`tables/paired_o2_vs_lightweight.tsv`、`tables/gate_ablation_summary.tsv`、`tables/CONDITION_ALIGNMENT_AUDIT.md`、`tables/paired_ranking_*.tsv`、`tables/order_decision/*`。代码：`src/lightweight_scorers.py`、`scripts/train_lightweight_scorer.py`、`scripts/eval_lightweight_scorers.sh`、`scripts/eval_order_lightweight.py`、`scripts/paired_multi_scorer.py`、`scripts/paired_ranking_analysis.py`、`scripts/gate_ablation.sh`、`scripts/order_decision_test.py`、`scripts/order_decision_paired.py`、`scripts/run_order_decision_all.sh`、`scripts/train_p123_system.py --selector_family`。
 
@@ -137,8 +138,9 @@ SWIFT/HSRM 对潜轨迹顺序**低于随机**（outcome-only 训练，无顺序�
 1. ✅ 补 B0 评测矩阵、CODIp2+B0 同池（已做）
 2. ✅ 3-seed 同池配对（已做）
 3. ✅ 同起点同预算 G3 SLPO / G4 Dropout-GRPO 训练 + B0 3-seed 评测（已做，见主实验 1）
-4. ✅ S2 ELHSR/SWIFT、S3 HSRM 适配 + 3-seed 同池评测 + 顺序机制指标 + gate 消融（已做，见主实验 3）
-5. G1 SFT / G2 RFT（经典对照，改动最小）
-6. S-Abl BCE 重训（恢复 checkpoint，数字已有）
-7. 冻 CODI 四 scorer 同池、O2/p2 组件消融
-8. 同起点 CODI-SLPO、G4 GRPO 更大预算复跑（若需对齐官方 40000/50000 步）
+4. ✅ S2 ELHSR/SWIFT、S3 HSRM 适配 + 同池评测 + 顺序机制指标 + gate 消融（已做，见主实验 3）
+5. ✅ 五种子扩展 seeds 42–46（BoN / Order-Decision / gate / 配对分析全部 5/5）
+6. G1 SFT / G2 RFT（经典对照，改动最小）
+7. S-Abl BCE 重训（恢复 checkpoint，数字已有）
+8. 冻 CODI 四 scorer 同池、O2/p2 组件消融
+9. 同起点 CODI-SLPO、G4 GRPO 更大预算复跑（若需对齐官方 40000/50000 步）

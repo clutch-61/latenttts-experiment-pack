@@ -203,14 +203,14 @@ bash scripts/eval_codi_full_matrix.sh
 | B0 / LatentRM (S1) | ✅ | 官方逐步对比 LatentRM |
 | BCE (S-Abl) | ⚠️ | O2 的训练目标消融；数字有（B1 GSM N16=32.15），checkpoint 删，需重训 |
 | O2 (S-Ours) | ✅ | 顺序偏好 |
-| HSRM-Latent (2608.30841) | ✅ 已适配 | 2 层 Transformer（~1.79M 参数）吃 latent 序列；同池 3-seed 已跑 |
-| ELHSR / SWIFT (2505.12225) | ✅ 已适配 | Linear(768,2)+gate（~1.5K 参数）；同池 3-seed 已跑 |
+| HSRM-Latent (2608.30841) | ✅ 已适配 | 2 层 Transformer（~1.79M 参数）吃 latent 序列；同池 **5-seed** 已跑 |
+| ELHSR / SWIFT (2505.12225) | ✅ 已适配 | Linear(768,2)+gate（~1.5K 参数）；同池 **5-seed** 已跑 |
 
-**同池 top1（GSM-Test N=16，3-seed，frozen / p2）：** B0 = 32.88 / 34.32；O2 = 33.66 / 35.89；**SWIFT = 34.07 / 35.94**；**HSRM = 33.76 / 36.19**。轻量 scorer ≥ O2 ≥ B0（±0.5pp 带内）。
+**同池 top1（GSM-Test N=16，5-seed mean±std，frozen / p2）：** B0 = 32.72±0.96 / 34.44±0.38；O2 = 33.72±1.03 / 35.92±0.28；SWIFT = 33.69±0.75 / 35.88±0.48；HSRM = 33.60±0.75 / **36.06±0.37**。轻量 scorer ≈ O2 ≥ B0。
 
 **顺序/层级机制指标（valid-64，corrects=1）：** O2 0.972 / 0.894 ≫ B0 0.860 / 0.769 ≫ SWIFT 0.449 / 0.242、HSRM 0.475 / 0.441（后两者低于随机）。
 
-**诚实结论：** O2 相对 SWIFT/HSRM 在 top1 / top1_ach / mrr 上**无显著差异**（同池配对 CI 跨 0；gate 消融 400 步 × 3 seed 亦无优势）。但**正确-错误配对排序 `auc_cw`** 上 O2 逐 seed **6/6 同号更高**（frozen O2−SWIFT +2.63pp [0.20,5.07] 显著；p2 +2.41pp 边缘）；机制指标亦 O2 完胜。**可比性警告**：O2 为 124M 吃整轨迹的预训练 GPT-2，SWIFT/HSRM 为随机初始化只看 6 潜步的小模型（1.5K/1.8M 参数）→ 名次不能当方法优劣。机器可读：`tables/scorer_axis_3seed.json`；完整汇报：`tables/SCORER_AXIS_REPORT.md`；可比性审计：`tables/CONDITION_ALIGNMENT_AUDIT.md`。
+**诚实结论（5-seed）：** O2 vs SWIFT/HSRM 在 **top1 上无显著差异**（配对 CI 跨 0）；gate 消融亦无优势（B0 尺 SWIFT−O2 +0.36±0.66）。但 **`auc_cw`** 上 O2 显著（冻 O2−SWIFT +2.34 [0.12,4.57]；p2 O2−SWIFT +3.19、O2−HSRM +2.70）；O2 vs B0 top1 冻/p2 均显著（+1.00 / +1.49）。机制指标亦 O2 完胜。**可比性警告**：O2 为 124M 吃整轨迹的预训练 GPT-2，SWIFT/HSRM 为随机初始化只看 6 潜步的小模型 → 名次不能当方法优劣。五种子状态：`tables/scorer_axis_5seed/FIVESEED_STATUS.md`。
 
 **本轮不做 / 不进主表：** PMPS、LTF、RSP、GenPRM（文本 PRM 与 latent 输入不匹配）；外方法互相交叉（如 SLPO×ELHSR）；对方论文 Acc 当同协议数字；Latent-GRPO（词表混合 latent token，非固定 COCONUT hidden-state recurrence，进相关工作）。
 
@@ -267,7 +267,8 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | `scripts/run_order_decision_all.sh` | 四模型 × N∈{4,16} 批量运行 |
 | `EXPERIMENTS.md` | 三主实验方案（生成器策略 / 底座泛化 / 打分器对比）与当前状态 |
 | `tables/bon_summary.*` | 全部系统数字摘要 |
-| `tables/scorer_axis_3seed.json` | 打分器轴 3-seed 机器可读摘要 |
+| `tables/scorer_axis_3seed.json` | 打分器轴 3-seed 机器可读摘要（历史） |
+| `tables/scorer_axis_5seed/` | 打分器轴 **5-seed** 表 + 配对 + `FIVESEED_STATUS.md` |
 | `tables/SCORER_AXIS_REPORT.md` | 打分器轴完整汇报（四轴证据） |
 | `tables/CONDITION_ALIGNMENT_AUDIT.md` | 三项可比性检查（条件对齐 / 逐题配对 / 无泄漏） |
 | `tables/condition_alignment.tsv` | 各 scorer 训练条件逐项对照 |
