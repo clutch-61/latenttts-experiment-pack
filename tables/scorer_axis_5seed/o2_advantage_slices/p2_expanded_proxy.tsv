@@ -1,0 +1,13 @@
+pair	metric	slice	n	gap_pp	ci_lo	ci_hi	note
+O2-SWIFT	top1	p2_new_cov	77	1.0390	-5.9740	8.5714	exploratory_proxy
+O2-SWIFT	top1	not_p2_new_cov	1242	-0.0161	-1.0145	0.9823	exploratory_proxy
+O2-SWIFT	auc_cw	p2_new_cov	77	4.3065	-1.0685	9.5012	exploratory_proxy
+O2-SWIFT	auc_cw	not_p2_new_cov	532	3.0254	0.5153	5.5504	exploratory_proxy
+O2-HSRM	top1	p2_new_cov	77	0.7792	-6.2338	8.0519	exploratory_proxy
+O2-HSRM	top1	not_p2_new_cov	1242	-0.1932	-1.1755	0.7729	exploratory_proxy
+O2-HSRM	auc_cw	p2_new_cov	77	3.4151	-1.9246	8.5023	exploratory_proxy
+O2-HSRM	auc_cw	not_p2_new_cov	532	2.5957	0.1627	5.0423	exploratory_proxy
+O2-B0	top1	p2_new_cov	77	4.9351	-1.8182	11.9481	exploratory_proxy
+O2-B0	top1	not_p2_new_cov	1242	1.2721	0.4348	2.1417	exploratory_proxy
+O2-B0	auc_cw	p2_new_cov	77	2.1007	-4.2530	8.3010	exploratory_proxy
+O2-B0	auc_cw	not_p2_new_cov	532	2.6916	0.1455	5.2493	exploratory_proxy

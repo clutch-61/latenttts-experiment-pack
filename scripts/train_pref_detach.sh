@@ -4,10 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-if [ -f "${HOME}/miniconda3/etc/profile.d/conda.sh" ]; then
-  source "${HOME}/miniconda3/etc/profile.d/conda.sh"
-  conda activate latenttts 2>/dev/null || true
-fi
+source /home/lihourun/miniconda3/etc/profile.d/conda.sh
+conda activate latenttts
 
 mkdir -p logs outputs
 LOG="logs/train_pref_$(date +%Y%m%d_%H%M%S).log"

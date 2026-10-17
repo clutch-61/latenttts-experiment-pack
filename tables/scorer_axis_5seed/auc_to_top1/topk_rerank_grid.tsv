@@ -1,0 +1,39 @@
+pool	method	k	alpha	val_top1	test_top1	selected
+frozen	o2	16	1.00	34.3939	33.5545	
+frozen	b0	16	1.00	33.3333	32.5687	
+frozen	b0_in_topk	2	1.00	34.4697	34.0664	
+frozen	b0_in_topk	3	1.00	34.3182	33.9147	
+frozen	b0_in_topk	4	1.00	34.5455	34.0664	
+frozen	b0_in_topk	6	1.00	34.6970	33.7630	VAL_BEST
+frozen	b0_in_topk	8	1.00	34.6970	33.8578	
+frozen	score_z_in_topk	2	0.30	34.4697	34.0664	
+frozen	score_z_in_topk	2	0.50	34.4697	33.6682	
+frozen	score_z_in_topk	2	0.70	34.4697	33.6682	
+frozen	score_z_in_topk	3	0.30	34.3182	33.9147	
+frozen	score_z_in_topk	3	0.50	34.4697	33.8578	
+frozen	score_z_in_topk	3	0.70	34.3182	33.6114	
+frozen	score_z_in_topk	4	0.30	34.4697	34.0474	
+frozen	score_z_in_topk	4	0.50	34.5455	33.8957	
+frozen	score_z_in_topk	4	0.70	34.3939	33.7062	
+frozen	oracle_correct_in_topk	2	1.00	37.8788	37.5735	
+frozen	oracle_correct_in_topk	3	1.00	39.5455	40.1327	
+frozen	oracle_correct_in_topk	4	1.00	40.6818	41.9147	
+p2	o2	16	1.00	38.4848	35.2796	
+p2	b0	16	1.00	36.0606	34.0284	
+p2	b0_in_topk	2	1.00	38.6364	35.6398	VAL_BEST
+p2	b0_in_topk	3	1.00	38.2576	35.4692	
+p2	b0_in_topk	4	1.00	38.4848	35.4502	
+p2	b0_in_topk	6	1.00	38.1818	35.1659	
+p2	b0_in_topk	8	1.00	37.5758	35.1090	
+p2	score_z_in_topk	2	0.30	38.6364	35.6398	
+p2	score_z_in_topk	2	0.50	38.4091	35.2227	
+p2	score_z_in_topk	2	0.70	38.4091	35.2227	
+p2	score_z_in_topk	3	0.30	38.1818	35.4313	
+p2	score_z_in_topk	3	0.50	38.2576	35.4313	
+p2	score_z_in_topk	3	0.70	38.4848	35.2986	
+p2	score_z_in_topk	4	0.30	38.2576	35.3744	
+p2	score_z_in_topk	4	0.50	38.1818	35.2607	
+p2	score_z_in_topk	4	0.70	38.4848	35.2986	
+p2	oracle_correct_in_topk	2	1.00	42.3485	39.9052	
+p2	oracle_correct_in_topk	3	1.00	43.9394	42.5213	
+p2	oracle_correct_in_topk	4	1.00	44.9242	44.4360	

@@ -4,10 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-if [ -f "${HOME}/miniconda3/etc/profile.d/conda.sh" ]; then
-  source "${HOME}/miniconda3/etc/profile.d/conda.sh"
-  conda activate latenttts 2>/dev/null || true
-fi
+source /home/lihourun/miniconda3/etc/profile.d/conda.sh
+conda activate latenttts
 
 # Refresh resume index from shards on disk
 python3 - <<'PY'

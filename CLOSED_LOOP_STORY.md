@@ -1,3 +1,5 @@
+> 论文叙事稿（匿名会议体例）：[`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md)。本文件为 Experiments 数字骨架。
+
 # Experiments（主文草稿）
 
 本节验证两件事是否构成可测的协同：（i）生成器侧后训练是否提高潜轨迹候选池质量；（ii）顺序偏好打分器是否比逐步对比 LatentRM 更能把同池增益变现，且该优势在（i）之后是否扩大。除非另注，协议统一为：潜步数 $T{=}6$，scorer 推理关闭 dropout，GSM8K-Test 为主表，BoN 主看 $N{\in}\{16,64\}$，主指标 Top-1；不跨生成器底座比较绝对准确率。
@@ -61,7 +63,7 @@
 
 **可比性。** 训练划分与候选池对齐，但 O2 为预训练 GPT-2 级骨干，SWIFT/HSRM 为随机初始化小头（约 1.5K / 1.8M）——Top-1 名次不得解读为方法绝对优劣。train/valid/test 问题级重叠为 0。
 
-**Takeaway.** （1）在相同候选池上，O2 相对 B0 稳定为正，且 **p2 池上 gap 更大**，与「探索扩大后更依赖结构敏感变现」一致。（2）相对轻量 outcome scorer，O2 的可辨优势在顺序/对错排序，而非稳定的 Top-1 碾压。（3）当任务强制需要顺序时，机制优势可转化为决策（Order-Decision）；标准 GSM BoN 的 correctness 由答案抽取判定时，该优势不必表现为 Top-1。
+**Takeaway.** （1）同池 O2−B0 Top1 为正；救援不对称支持相对 B0 的变现补足。（2）相对 SWIFT/HSRM：full-O2 的 `auc_cw` 有优势（~+3pp），但 Top1 接近平手——下一阶段任务是把辨别力转成 Top1，而非否定 O2。（3）`latent_only` 消融显示该 `auc_cw` 优势依赖文本上下文；保留 full-O2，补 `text-only` 与选择端校准以优化输入/打分配方。Order-Decision 仍支持顺序机制可转化为决策。
 
 ---
 

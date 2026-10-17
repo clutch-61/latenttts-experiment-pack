@@ -46,12 +46,22 @@ def main(
     score_reduce: Literal[
         "sum_logit", "mean_logit", "sum_log_prob", "mean_log_prob"
     ] = "sum_logit",
+    prm_input_mode: Literal["full", "latent_only", "text_only"] = "full",
     seed: int = 200,
     sort_by_len: bool = True,
     progress_bar: bool = True,
     result_json: str | None = None,
 ):
-    """BoN eval. Claim Acc defaults to softmax-weighted vote (T=1); top-1 kept as accuracy_top1."""
+    """BoN eval. Claim Acc defaults to softmax-weighted vote (T=1); top-1 kept as accuracy_top1.
+
+    prm_input_mode (O2/B0 gpt2 family):
+      full — tokenize decoded trajectory text and splice real latent embeds at <|latent|>
+             (default; historical BoN).
+      latent_only — PRM sees only start + T×latent + end (no question/answer text).
+      text_only — same token layout as full, but latent slots filled with zeros; scores
+             aggregated on non-latent tokens only. Isolates text contribution for
+             input-recipe optimization (complement to latent_only).
+    """
     new_line_after_input = generator_type == "coconut"
     if prm_mode == "beam_search":
         assert num_return_sequences == 1
@@ -71,7 +81,11 @@ def main(
         print(f"Loading {data_path}")
         print(
             f"generator_id={model_id} claim_agg={claim_agg} score_reduce={score_reduce} "
-            f"dropout_p={dropout_p} max_new_tokens={max_new_tokens}"
+            f"prm_input_mode={prm_input_mode} dropout_p={dropout_p} max_new_tokens={max_new_tokens}"
+        )
+    if prm_input_mode in ("latent_only", "text_only") and prm_model_family in ("swift", "hsrm"):
+        raise ValueError(
+            f"prm_input_mode={prm_input_mode} only applies to gpt2/llama LatentRM, not {prm_model_family}"
         )
 
     processing_class = AutoTokenizer.from_pretrained(model_id)
@@ -210,7 +224,10 @@ def main(
         text_output = processing_class.batch_decode(output.sequences, skip_special_tokens=True)
 
         prm_input_texts = []
-        if prm_model_family == "llama":
+        inputs = None
+        if prm_mode == "best_of_n" and prm_input_mode == "latent_only":
+            pass  # latent-only path builds ids from start/latent/end tokens
+        elif prm_model_family == "llama":
             for text in text_output:
                 splited = text.split("\n")
                 question = splited[0]
@@ -234,6 +251,56 @@ def main(
                 top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
                 prm_scores_cpu = prm_scores.detach().float().cpu()
                 del prm_scores
+            elif prm_input_mode == "latent_only":
+                # Strip question/answer text: PRM sees only start + T latents + end.
+                lat = output.latent_thoughts.to(prm.device)
+                bn, t_lat, _ = lat.shape
+                if t_lat != latent_length:
+                    raise RuntimeError(
+                        f"latent_only expects T={latent_length}, got {t_lat}"
+                    )
+                ids = torch.full(
+                    (bn, t_lat + 2), end_id, dtype=torch.long, device=prm.device
+                )
+                ids[:, 0] = start_id
+                ids[:, 1 : 1 + t_lat] = latent_id
+                ids[:, -1] = end_id
+                attn = torch.ones_like(ids)
+                prm_scores = prm(
+                    input_ids=ids,
+                    attention_mask=attn,
+                    latent_embeds=lat,
+                    return_dict=True,
+                ).logits.squeeze(-1)
+                latent_mask = ids == prm.config.latent_id
+                prm_scores = aggregate_latent_scores(
+                    prm_scores, latent_mask, reduce=score_reduce
+                )
+                prm_scores = prm_scores.reshape(-1, num_return_sequences)
+                top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
+                prm_scores_cpu = prm_scores.detach().float().cpu()
+                del prm_scores, ids, attn, lat
+            elif prm_input_mode == "text_only":
+                # Same layout as full; zero-fill latent slots; aggregate on text tokens.
+                ids = inputs["input_ids"].to(prm.device)
+                attn = inputs["attention_mask"].to(prm.device)
+                lat = output.latent_thoughts.to(prm.device)
+                zeros = torch.zeros_like(lat)
+                prm_scores = prm(
+                    input_ids=ids,
+                    attention_mask=attn,
+                    latent_embeds=zeros,
+                    return_dict=True,
+                ).logits.squeeze(-1)
+                latent_mask = ids == prm.config.latent_id
+                text_mask = attn.bool() & ~latent_mask
+                prm_scores = aggregate_latent_scores(
+                    prm_scores, text_mask, reduce=score_reduce
+                )
+                prm_scores = prm_scores.reshape(-1, num_return_sequences)
+                top_indices = torch.topk(prm_scores, k=1, dim=1)[1]
+                prm_scores_cpu = prm_scores.detach().float().cpu()
+                del prm_scores, zeros, lat
             else:
                 prm_scores = prm(
                     input_ids=inputs["input_ids"].to(prm.device),

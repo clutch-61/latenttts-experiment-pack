@@ -4,9 +4,24 @@
 
 本仓库提供：**原始基线**、**自家续训方法（p2mmd05）**，以及按同一协议评测的 **外部生成器（SLPO、CODI）** 和 **在 CODI 上再跑同一套续训（CODIp2）**。权重和完整采样 dump 需自备；数字摘要在 [`tables/`](tables/)。
 
-> **先读这两份再读数字表：**
+> **先读这些再读数字表：**
 > 1. [`CLOSED_LOOP_STORY.md`](CLOSED_LOOP_STORY.md) — 论文 **Experiments** 体例草稿（协议 / 主表 / Takeaway / 限制；生成器×打分器闭环）。
 > 2. [`EXPERIMENTS.md`](EXPERIMENTS.md) — 三主实验规划与当前缺口清单（生成器策略对比 / 底座泛化 / 打分器对比）。
+> 3. [`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md) — 中文论文叙事稿（三失败模式 Method）；英文稿 [`PAPER_NARRATIVE_en.md`](PAPER_NARRATIVE_en.md)。
+> 4. [`PLAN.md`](PLAN.md) — 实验决策日志（含口径、hold、下一步）。
+> 5. [`HANDOFF_EXPERIMENT_REPORT.md`](HANDOFF_EXPERIMENT_REPORT.md) — 实测交接与协议审计。
+
+### 打分器诊断（同池 dump 摘要）
+
+| 报告 | 内容 |
+|------|------|
+| [`tables/o2_input_mode/REPORT.md`](tables/o2_input_mode/REPORT.md) | full / latent-only / text-only：保留 full；text-only 否决 |
+| [`tables/scorer_axis_5seed/auc_to_top1/REPORT.md`](tables/scorer_axis_5seed/auc_to_top1/REPORT.md) | AUC→Top1：lost_to_strongest_wrong；O2↔B0 救回；融合≈0 |
+| [`tables/scorer_axis_5seed/auc_to_top1/topk_rerank_NOTE.md`](tables/scorer_axis_5seed/auc_to_top1/topk_rerank_NOTE.md) | O2 top-k→B0：可部署≈0，oracle top2–4 有上界 |
+| [`tables/scorer_axis_5seed/o2_advantage_slices/REPORT.md`](tables/scorer_axis_5seed/o2_advantage_slices/REPORT.md) | DiD / 对称救回 / 基线纠错切片 |
+| [`tables/results/`](tables/results/) | 全量汇报与 TSV 摘要镜像（不含多 MB 逐题 dump） |
+
+对应分析脚本：`scripts/o2_input_mode_compare.py`、`o2_auc_to_top1_diagnosis.py`、`o2_topk_rerank.py`、`o2_advantage_slices.py`。`src/infer_gpt2_rm.py` 支持 `--prm_input_mode={full,latent_only,text_only}`。
 
 ---
 

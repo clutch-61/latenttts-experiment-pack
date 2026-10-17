@@ -92,7 +92,7 @@ def main() -> None:
     args = ap.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
-    out_npz = (args.out_json.rsplit(".", 1)[0] + ".npz") if args.out_json else "order_decision.npz"
+    out_npz_stem = (args.out_json[:-5] if args.out_json.endswith(".json") else args.out_json) or "order_decision"
     feats = gather_positives(args.data_dir, args.max_pos)
     print(f"[data] n_pos={len(feats)} n={args.n}")
     if not feats:
@@ -210,7 +210,7 @@ def main() -> None:
             "pair": torch.cat(per_pool_pair).numpy(),
             "strict": torch.cat(per_pool_strict).numpy(),
         }
-        np.savez(out_npz.replace(".npz", f"_{ctype}.npz"), **per_pool)
+        np.savez(f"{out_npz_stem}__{ctype}.npz", **per_pool)
         print(f"[{ctype}] pair_acc={results[ctype]['pair_acc']:.4f} "
               f"strict_win={results[ctype]['strict_win']*100:.2f}% "
               f"tie_frac={results[ctype]['tie_frac']*100:.1f}% "

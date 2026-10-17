@@ -35,11 +35,35 @@ sys.path.insert(0, str(ROOT))
 
 from src.generation_mixin import LatentGenerationMixin, LatentGenerationConfig  # noqa: E402
 from src.lightweight_scorers import build_lightweight_scorer  # noqa: E402
+from src.models.perturbation import MCLinear, find_and_replace_target_modules  # noqa: E402
 from src.paths import MODELS  # noqa: E402
 from src.sf_rollout import RolloutBatch, sf_train_step  # noqa: E402
 from src.system_scoring import load_prm, sum_logit_score, wvote_select  # noqa: E402
 from src.order_pref.content_view import ContentProjector, content_view  # noqa: E402
 from src.order_pref.set_align import mmd_rbf_multiscale  # noqa: E402
+
+
+def inject_colar_dropout(model, dropout_p: float):
+    """Llama has no nn.Dropout; CoLaR parallel sampling uses MCLinear on down_proj (infer_llama)."""
+    find_and_replace_target_modules(
+        model,
+        target_modules=["down_proj"],
+        target_module_type=torch.nn.Linear,
+        replace_fn=MCLinear,
+        p=dropout_p,
+    )
+
+
+def unwrap_colar_mclinear(model):
+    """Restore nn.Linear so save_pretrained writes down_proj.weight (not down_proj.linear.weight)."""
+    for name, module in list(model.named_modules()):
+        if not isinstance(module, MCLinear):
+            continue
+        parent = model
+        parts = name.split(".")
+        for p in parts[:-1]:
+            parent = getattr(parent, p)
+        setattr(parent, parts[-1], module.linear)
 
 
 def parse_gold(ans) -> float:
@@ -85,9 +109,20 @@ class TrainJSON(Dataset):
 
 
 def latent_prefix(question: str, generator_type: str) -> str:
+    if generator_type == "colar":
+        # Strategy-aligned CoLaR (p2v2): no ### / <|latent|> in prefix.
+        # load_generator sets latent_start_id=')' so the trailing ')' triggers fixed-T latents
+        # (putting <|latent|> in input_ids requires inputs_embeds and breaks .generate).
+        return f"Question: {question} Let's think step by step:(Thinking speed: 2)"
     if generator_type == "coconut":
         return question + "\n<|start-latent|>"
     return question + "<|start-latent|>"
+
+
+def latent_end_token_id(tok, generator_type: str) -> int:
+    if generator_type == "colar":
+        return tok.convert_tokens_to_ids("###")
+    return tok.convert_tokens_to_ids("<|end-latent|>")
 
 
 def load_generator(
@@ -103,17 +138,27 @@ def load_generator(
         def __init__(self, config):
             super().__init__(config)
 
-    load_kw = dict(
-        latent_id=tok.convert_tokens_to_ids("<|latent|>"),
-        latent_start_id=tok.convert_tokens_to_ids("<|start-latent|>"),
-        latent_end_id=tok.convert_tokens_to_ids("<|end-latent|>"),
-        attn_pdrop=0.0,
-        embd_pdrop=0.0,
-        pad_token_id=tok.pad_token_id,
-        torch_dtype=dtype,
-    )
-    if generator_type == "coconut":
-        load_kw["target_id"] = tok.convert_tokens_to_ids(">>")
+    if generator_type == "colar":
+        # Llama + LatentHead. Use ')' as latent_start (matches fixed_t prefix end) so fixed T works.
+        load_kw = dict(
+            latent_id=tok.convert_tokens_to_ids("<|latent|>"),
+            latent_start_id=tok.convert_tokens_to_ids(")"),
+            latent_end_id=tok.convert_tokens_to_ids("###"),
+            pad_token_id=tok.pad_token_id,
+            torch_dtype=dtype,
+        )
+    else:
+        load_kw = dict(
+            latent_id=tok.convert_tokens_to_ids("<|latent|>"),
+            latent_start_id=tok.convert_tokens_to_ids("<|start-latent|>"),
+            latent_end_id=tok.convert_tokens_to_ids("<|end-latent|>"),
+            attn_pdrop=0.0,
+            embd_pdrop=0.0,
+            pad_token_id=tok.pad_token_id,
+            torch_dtype=dtype,
+        )
+        if generator_type == "coconut":
+            load_kw["target_id"] = tok.convert_tokens_to_ids(">>")
     model = LatentGen.from_pretrained(ckpt, **load_kw).to(device)
     if not trainable:
         model.eval()
@@ -144,9 +189,12 @@ def _after_from_seq(tok, seq, end_id):
             seq = seq[: int(nz[-1]) + 1]
     after = ""
     seq_list = seq.tolist()
-    if end_id in seq_list:
-        epos = seq_list.index(end_id)
-        after = tok.decode(seq_list[epos + 1 :], skip_special_tokens=False)
+    # CoLaR prompt already ends with ###; take the *last* end marker so "after"
+    # is the explicit answer, not latent tokens (whose id can be == vocab_size).
+    end_positions = [i for i, t in enumerate(seq_list) if t == end_id]
+    if end_positions:
+        epos = end_positions[-1]
+        after = tok.decode(seq_list[epos + 1 :], skip_special_tokens=True)
         after = after.replace(tok.pad_token or "", "")
         if tok.eos_token:
             after = after.replace(tok.eos_token, "")
@@ -235,19 +283,50 @@ def generate_batch(
     device,
     dropout_p,
     generator_type: str = "coconut",
+    max_latent_length: int | None = None,
 ):
     _set_cuda(device)
     prompts = [latent_prefix(q, generator_type) for q in questions]
-    enc = gen_tok(prompts, return_tensors="pt", padding=True)
-    kw = dict(latent_do_sample=True, latent_do_sample_by="dropout", dropout_p=dropout_p) if sample else dict(
-        latent_do_sample=False
+    enc = gen_tok(
+        prompts,
+        return_tensors="pt",
+        padding=True,
+        add_special_tokens=(generator_type != "colar"),
     )
+    if sample:
+        if generator_type == "colar":
+            # Noise sampling: no MCLinear on the trainable student (dropout-in-CE caused collapse).
+            noise_std = max(float(dropout_p), 0.01) * 0.1  # map dp≈0.03 → std≈0.003
+            kw = dict(
+                latent_do_sample=True,
+                latent_do_sample_by="noise",
+                explicit_do_sample=True,
+                explicit_do_sample_by="noise",
+                noise_std=noise_std,
+            )
+        else:
+            kw = dict(
+                latent_do_sample=True,
+                latent_do_sample_by="dropout",
+                explicit_do_sample=True,
+                explicit_do_sample_by="dropout",
+                dropout_p=dropout_p,
+            )
+    else:
+        kw = dict(latent_do_sample=False)
+    if max_latent_length is not None:
+        lat_kw = dict(latent_length=None, max_latent_length=max_latent_length)
+    else:
+        lat_kw = dict(latent_length=latent_length, max_latent_length=None)
+    eos_id = gen_tok.eos_token_id
+    if isinstance(eos_id, (list, tuple)):
+        eos_id = eos_id[0]
     gen_cfg = LatentGenerationConfig(
         max_new_tokens=max_new_tokens,
-        latent_length=latent_length,
         pad_token_id=gen_tok.pad_token_id,
-        eos_token_id=gen_tok.eos_token_id,
+        eos_token_id=eos_id,
         bos_token_id=gen_tok.bos_token_id,
+        **lat_kw,
         **kw,
     )
     out = model.generate(
@@ -321,16 +400,19 @@ def sample_and_score(
     generator_type: str = "coconut",
     selector_family: str = "gpt2",
     score_norm: str = "raw",
+    max_latent_length: int | None = None,
 ):
     """Returns per-question (rows, teacher_tuple) for a batch of questions.
 
     If frozen_device is set, teacher/B0 generate+score there; student stays on device.
     If replica is set on a *third* card, student k is split (k/2 ‖ k/2); that is the
     only split that can beat single-card student generate (teacher k=1 is already cheap).
+    selector_family='none': skip LatentRM; fill score_o2 with answer correctness (0/1)
+    for mid diagnostics — used by CoLaR (d≠768, GPT-2 O2/B0 incompatible).
     """
     fdev = frozen_device or device
     extractor = MODELS[generator_type]["answer_extractor"]
-    end_id = gen_tok.convert_tokens_to_ids("<|end-latent|>")
+    end_id = latent_end_token_id(gen_tok, generator_type)
     qs = [ex["question"] for ex in exs]
     nq = len(qs)
     t_gen0 = time.perf_counter()
@@ -351,6 +433,7 @@ def sample_and_score(
         max_new_tokens=max_new_tokens,
         dropout_p=0.0,
         generator_type=generator_type,
+        max_latent_length=max_latent_length,
     )
     s_kw = dict(
         sample=True,
@@ -358,6 +441,7 @@ def sample_and_score(
         max_new_tokens=max_new_tokens,
         dropout_p=dropout_p,
         generator_type=generator_type,
+        max_latent_length=max_latent_length,
     )
     if k2:
         _sync_replica(student, replica)
@@ -385,40 +469,46 @@ def sample_and_score(
     s_text = gen_tok.batch_decode(s_seq, skip_special_tokens=True)
     t_text = gen_tok.batch_decode(t_seq, skip_special_tokens=True)
     texts = s_text + t_text
-    o2_dev = str(next(o2.parameters()).device)
-    b0_dev = str(next(b0.parameters()).device) if b0 is not None else o2_dev
-    lats_o2 = torch.cat(
-        [s_lat.to(o2_dev, non_blocking=True), t_lat.to(device=o2_dev, dtype=s_lat.dtype)],
-        dim=0,
-    )
-    if b0 is not None and b0_dev != o2_dev:
-        lats_b0 = torch.cat(
-            [s_lat.to(b0_dev, non_blocking=True), t_lat.to(device=b0_dev, dtype=s_lat.dtype)],
-            dim=0,
-        )
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            if selector_family in ("swift", "hsrm"):
-                fut_o2 = pool.submit(lightweight_scores, o2, lats_o2, o2_dev, chunk)
-            else:
-                fut_o2 = pool.submit(prm_scores_from_texts, o2, prm_tok, texts, lats_o2, o2_dev, chunk)
-            fut_b0 = pool.submit(prm_scores_from_texts, b0, prm_tok, texts, lats_b0, b0_dev, chunk)
-            sc_o2 = fut_o2.result()
-            sc_b0 = fut_b0.result()
-    else:
-        if selector_family in ("swift", "hsrm"):
-            sc_o2 = lightweight_scores(o2, lats_o2, o2_dev, chunk)
-        else:
-            sc_o2 = prm_scores_from_texts(o2, prm_tok, texts, lats_o2, o2_dev, chunk)
-        sc_b0 = (
-            prm_scores_from_texts(b0, prm_tok, texts, lats_o2, o2_dev, chunk)
-            if b0 is not None
-            else [None] * len(texts)
-        )
-    if score_norm == "zscore":
-        sc_o2 = _zscore_groups(sc_o2, nq, k)
     n_s = len(s_text)
     s_lat_cpu = s_lat.detach().float().cpu()
     t_lat_cpu = t_lat.detach().float().cpu()
+
+    if selector_family == "none" or o2 is None:
+        # Answer-only placeholder scores; real gate is select_mode=answer_beat.
+        sc_o2 = [0.0] * len(texts)
+        sc_b0 = [None] * len(texts)
+    else:
+        o2_dev = str(next(o2.parameters()).device)
+        b0_dev = str(next(b0.parameters()).device) if b0 is not None else o2_dev
+        lats_o2 = torch.cat(
+            [s_lat.to(o2_dev, non_blocking=True), t_lat.to(device=o2_dev, dtype=s_lat.dtype)],
+            dim=0,
+        )
+        if b0 is not None and b0_dev != o2_dev:
+            lats_b0 = torch.cat(
+                [s_lat.to(b0_dev, non_blocking=True), t_lat.to(device=b0_dev, dtype=s_lat.dtype)],
+                dim=0,
+            )
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                if selector_family in ("swift", "hsrm"):
+                    fut_o2 = pool.submit(lightweight_scores, o2, lats_o2, o2_dev, chunk)
+                else:
+                    fut_o2 = pool.submit(prm_scores_from_texts, o2, prm_tok, texts, lats_o2, o2_dev, chunk)
+                fut_b0 = pool.submit(prm_scores_from_texts, b0, prm_tok, texts, lats_b0, b0_dev, chunk)
+                sc_o2 = fut_o2.result()
+                sc_b0 = fut_b0.result()
+        else:
+            if selector_family in ("swift", "hsrm"):
+                sc_o2 = lightweight_scores(o2, lats_o2, o2_dev, chunk)
+            else:
+                sc_o2 = prm_scores_from_texts(o2, prm_tok, texts, lats_o2, o2_dev, chunk)
+            sc_b0 = (
+                prm_scores_from_texts(b0, prm_tok, texts, lats_o2, o2_dev, chunk)
+                if b0 is not None
+                else [None] * len(texts)
+            )
+        if score_norm == "zscore":
+            sc_o2 = _zscore_groups(sc_o2, nq, k)
 
     results = []
     for qi, ex in enumerate(exs):
@@ -428,22 +518,27 @@ def sample_and_score(
             i = qi * k + j
             after, _ = _after_from_seq(gen_tok, s_seq[i], end_id)
             pred = extractor(s_text[i])
+            ok = pred == gold
+            if selector_family == "none" or o2 is None:
+                sc_o2[i] = 1.0 if ok else 0.0
             rows.append(
                 {
                     "after": after,
                     "pred": pred,
-                    "correct": pred == gold,
+                    "correct": ok,
                     "score_o2": sc_o2[i],
                     "score_b0": sc_b0[i],
                     "after_len": len(after),
                     "starts_hash3": after.lstrip().startswith("###"),
-                    "has_cot": "<<" in after,
+                    "has_cot": ("<<" in after) or (generator_type == "colar" and "Answer:" in after),
                     "latents": s_lat_cpu[i],
                     "input_ids": s_seq[i].detach().cpu(),
                 }
             )
         t_after, _ = _after_from_seq(gen_tok, t_seq[qi], end_id)
         t_ok = extractor(t_text[qi]) == gold
+        if selector_family == "none" or o2 is None:
+            sc_o2[n_s + qi] = 1.0 if t_ok else 0.0
         # teacher latents always returned (P2 online H^pos when t_ok)
         results.append(
             (rows, (t_after, t_ok, sc_o2[n_s + qi], sc_b0[n_s + qi], t_lat_cpu[qi]))
@@ -458,7 +553,10 @@ def sample_and_score(
 
 
 def make_batch(tok, question, target_text, max_target_len, device, generator_type: str = "coconut"):
-    qenc = tok(latent_prefix(question, generator_type), add_special_tokens=True)
+    qenc = tok(
+        latent_prefix(question, generator_type),
+        add_special_tokens=(generator_type != "colar"),
+    )
     aenc = tok(target_text, add_special_tokens=False)
     aid = list(aenc["input_ids"][:max_target_len])
     if tok.eos_token_id is not None and (not aid or aid[-1] != tok.eos_token_id):
@@ -546,12 +644,33 @@ def select_target(
         (no O2 gate). Otherwise fall back to dual_beat.
       wvote — if O2 softmax-weighted-vote winner answer is correct, CE on the highest-O2
         sample of that answer (align generator with the aggregation that works). Else dual_beat.
+      answer_beat — CoLaR / no-LatentRM: prefer longest correct student decode; else teacher
+        if correct; else skip. Dual-beat spirit without GPT-2 O2/B0.
 
     Teacher rows return teacher latents (for P2 MMD / λ_lat) when available.
     """
     wrong = [r for r in rows if not r["correct"]]
     max_wrong_o2 = max((r["score_o2"] for r in wrong), default=-1e9)
     correct = [r for r in rows if r["correct"]]
+    if select_mode == "answer_beat":
+        # Reject collapse-prone short / Answer:0 targets (p2v1 mode-collapsed to Answer:0).
+        def _usable(r):
+            after = (r.get("after") or "").strip()
+            if len(after) < 6:
+                return False
+            if re.match(r"(?i)^answer:\s*0+\s*$", after):
+                return False
+            return True
+
+        usable = [r for r in correct if _usable(r)]
+        if usable:
+            best = max(usable, key=lambda r: (r["after_len"], r["score_o2"]))
+            return "beat_self", best["after"], best["latents"], "answer_ok"
+        if t_ok and t_after and _usable({"after": t_after}):
+            return "teacher", t_after, t_lat, "answer_teacher"
+        if correct:
+            return "skip", None, None, "trivial_target"
+        return "skip", None, None, "no_correct"
     if select_mode == "coverage" and not correct and t_ok and t_after:
         return "teacher", t_after, t_lat, "cover_teacher"
     if select_mode == "wvote":
@@ -603,9 +722,25 @@ def mixed_rank_pair(rows):
     return gold, thief
 
 
-def _safe_ckpt(student, tok, o2, projector, losses, outdir, *, fatal: bool = False):
+def _safe_ckpt(
+    student,
+    tok,
+    o2,
+    projector,
+    losses,
+    outdir,
+    *,
+    fatal: bool = False,
+    generator_type: str = "coconut",
+    dropout_p: float = 0.2,
+):
     """Write ckpt; disk-full must not kill a mid-run (final save still raises)."""
+    rewrap = False
     try:
+        # CoLaR train injects MCLinear; unwrap before save so infer loads down_proj.weight.
+        if generator_type == "colar" and any(isinstance(m, MCLinear) for m in student.modules()):
+            unwrap_colar_mclinear(student)
+            rewrap = True
         student.save_pretrained(outdir / "model")
         tok.save_pretrained(outdir / "model")
         if o2 is not None:
@@ -624,6 +759,9 @@ def _safe_ckpt(student, tok, o2, projector, losses, outdir, *, fatal: bool = Fal
         print(f"WARN ckpt save failed ({type(e).__name__}: {msg}); continue", flush=True)
         if fatal:
             raise
+    finally:
+        if rewrap:
+            inject_colar_dropout(student, dropout_p)
 
 
 def o2_rank_hinge(o2, gold_row, thief_row, *, margin: float):
@@ -640,7 +778,7 @@ def main():
     ap.add_argument("--train_json", default="data/gsm_train.json")
     ap.add_argument(
         "--generator_type",
-        choices=["coconut", "codi"],
+        choices=["coconut", "codi", "colar"],
         default="coconut",
         help="student/teacher family; must match --ckpt / --teacher_ckpt",
     )
@@ -650,10 +788,11 @@ def main():
     ap.add_argument("--b0_id", default="outputs/latentrm_baseline/best")
     ap.add_argument(
         "--selector_family",
-        choices=["gpt2", "swift", "hsrm"],
+        choices=["gpt2", "swift", "hsrm", "none"],
         default="gpt2",
         help="Scorer family used as the gating selector. gpt2=O2 (default behaviour). "
-        "swift/hsrm = lightweight latent scorers (gate ablation).",
+        "swift/hsrm = lightweight latent scorers (gate ablation). "
+        "none = answer-only gate (required for CoLaR; GPT-2 LatentRM d=768 incompatible).",
     )
     ap.add_argument(
         "--score_norm",
@@ -714,6 +853,13 @@ def main():
     )
     ap.add_argument("--latent_length", type=int, default=6)
     ap.add_argument(
+        "--max_latent_length",
+        type=int,
+        default=None,
+        help="If set, sample with variable-length latents (CoLaR official). "
+        "SF-C still uses --latent_length. Mutually exclusive with fixed latent_length in generate.",
+    )
+    ap.add_argument(
         "--max_new_tokens",
         type=int,
         default=128,
@@ -727,9 +873,10 @@ def main():
     ap.add_argument("--diag_every", type=int, default=50, help="flush mid JSONL every N updates")
     ap.add_argument(
         "--select_mode",
-        choices=["dual_beat", "coverage", "wvote"],
+        choices=["dual_beat", "coverage", "wvote", "answer_beat"],
         default="wvote",
-        help="default wvote: align train target with claim aggregation (softmax T=1)",
+        help="default wvote: align train target with claim aggregation (softmax T=1). "
+        "answer_beat: CoLaR / no-LatentRM correctness gate.",
     )
     ap.add_argument(
         "--easy_keep_prob",
@@ -746,6 +893,38 @@ def main():
         "auto: currently aliases to C after fixseam root-cause (B hurt latent learning).",
     )
     args = ap.parse_args()
+
+    # CoLaR: GPT-2 LatentRM (d=768) cannot score Llama latents (d=2048).
+    # Generate uses official max_latent_length (prompt already ends with ###);
+    # fixed latent_length path would see end-token and emit zero latents.
+    # SF-C still rolls out fixed --latent_length steps for CE.
+    if args.generator_type == "colar":
+        if args.selector_family == "gpt2":
+            args.selector_family = "none"
+            print("CoLaR: forcing --selector_family=none (no GPT-2 O2/B0)", flush=True)
+        if args.select_mode in ("wvote", "dual_beat"):
+            args.select_mode = "answer_beat"
+            print("CoLaR: forcing --select_mode=answer_beat", flush=True)
+        # p2v2: fixed T for sample ≡ SF; do NOT default to max_latent_length.
+        if args.max_latent_length is not None:
+            print(
+                "WARN CoLaR p2v2: clearing --max_latent_length "
+                f"(was {args.max_latent_length}); use fixed latent_length for strategy alignment",
+                flush=True,
+            )
+            args.max_latent_length = None
+        if args.latent_length == 6:
+            args.latent_length = 16
+        print(
+            f"CoLaR p2v2: fixed latent_length={args.latent_length}, noise sample, no MCLinear inject",
+            flush=True,
+        )
+        if args.lambda_rank > 0:
+            raise SystemExit("CoLaR: --lambda_rank requires a CoLaR-dim LatentRM; refuse GPT-2 O2 rank")
+        if args.ckpt == "checkpoints/coconut":
+            args.ckpt = "checkpoints/colar"
+        if args.teacher_ckpt == "checkpoints/coconut":
+            args.teacher_ckpt = "checkpoints/colar"
 
     torch.manual_seed(args.seed)
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -776,6 +955,8 @@ def main():
         tag += f"_sel{args.selector_family}"
     if args.score_norm != "raw":
         tag += f"_{args.score_norm}"
+    if args.max_latent_length is not None:
+        tag += f"_ml{args.max_latent_length}"
     outdir = Path(args.outdir or f"outputs/p123_{tag}_{stamp}")
     outdir.mkdir(parents=True, exist_ok=True)
     mid_path = outdir / "mid_metrics.jsonl"
@@ -788,25 +969,34 @@ def main():
     frozen_dtype = {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[
         args.frozen_dtype
     ]
+    # Student dtype: Llama-1B packs better in bf16 when trainable; keep coconut/codi fp32.
+    student_dtype = frozen_dtype if args.generator_type == "colar" else torch.float32
     # 2-card packing: student+O2 on device0; teacher+B0 on frozen_device → parallel gen + parallel score
     student, tok = load_generator(
-        device, ckpt, trainable=True, dtype=torch.float32, generator_type=args.generator_type
+        device, ckpt, trainable=True, dtype=student_dtype, generator_type=args.generator_type
     )
     teacher, _ = load_generator(
         frozen_device, tckpt, trainable=False, dtype=frozen_dtype, generator_type=args.generator_type
     )
-    o2 = load_prm(
-        o2_id,
-        tok,
-        device,
-        dtype=torch.float32 if args.lambda_rank > 0 else frozen_dtype,
-        trainable=args.lambda_rank > 0,
-    ) if args.selector_family == "gpt2" else load_lightweight_selector(
-        o2_id, device, family=args.selector_family
-    )
-    if args.lambda_rank > 0:
+    # CoLaR p2v2: do NOT inject MCLinear on the trainable student (SF-C + dropout collapsed v1).
+    if args.selector_family == "none":
+        o2 = None
+        b0 = None
+        print("selector=none: skipping O2/B0 load (answer_beat gate)", flush=True)
+    elif args.selector_family == "gpt2":
+        o2 = load_prm(
+            o2_id,
+            tok,
+            device,
+            dtype=torch.float32 if args.lambda_rank > 0 else frozen_dtype,
+            trainable=args.lambda_rank > 0,
+        )
+        b0 = load_prm(b0_id, tok, frozen_device, dtype=frozen_dtype, trainable=False)
+    else:
+        o2 = load_lightweight_selector(o2_id, device, family=args.selector_family)
+        b0 = load_prm(b0_id, tok, frozen_device, dtype=frozen_dtype, trainable=False)
+    if args.lambda_rank > 0 and o2 is not None:
         o2.eval()  # dropout off for k-pool scoring; train() only on rank forward
-    b0 = load_prm(b0_id, tok, frozen_device, dtype=frozen_dtype, trainable=False)
     replica = None
     replica_device = args.gen_replica_device
     if replica_device:
@@ -823,8 +1013,10 @@ def main():
         gen_tok.pad_token = gen_tok.eos_token
     prm_tok = tok
     print(
-        f"DEVICES student+O2={device} teacher+B0={frozen_device} "
-        f"(parallel gen + parallel O2‖B0 score)",
+        f"DEVICES student={device} teacher={frozen_device} "
+        f"selector={args.selector_family} "
+        f"(parallel gen"
+        + ("; O2‖B0 score)" if args.selector_family != "none" else "; answer-only gate)"),
         flush=True,
     )
 
@@ -950,6 +1142,7 @@ def main():
                         generator_type=args.generator_type,
                         selector_family=args.selector_family,
                         score_norm=args.score_norm,
+                        max_latent_length=args.max_latent_length,
                     ),
                 )
             )
@@ -1156,10 +1349,29 @@ def main():
                 print(f"\nMID step={step} {summary}", flush=True)
 
             if step % args.save_every == 0:
-                _safe_ckpt(student, tok, o2 if args.lambda_rank > 0 else None, projector, losses, outdir)
+                _safe_ckpt(
+                    student,
+                    tok,
+                    o2 if args.lambda_rank > 0 else None,
+                    projector,
+                    losses,
+                    outdir,
+                    generator_type=args.generator_type,
+                    dropout_p=args.dropout_p,
+                )
 
     pbar.close()
-    _safe_ckpt(student, tok, o2 if args.lambda_rank > 0 else None, projector, losses, outdir, fatal=True)
+    _safe_ckpt(
+        student,
+        tok,
+        o2 if args.lambda_rank > 0 else None,
+        projector,
+        losses,
+        outdir,
+        fatal=True,
+        generator_type=args.generator_type,
+        dropout_p=args.dropout_p,
+    )
     json.dump(
         {"sources": dict(sources), "skips": dict(skips), "attempts": attempts, "steps": step},
         open(outdir / "train_stats.json", "w"),
