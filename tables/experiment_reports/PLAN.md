@@ -2680,3 +2680,11 @@ Do not：上 SLPO 冒充第三底座；盲 λ_MMD；未过探针宣称修好。
 - **读法：** 头部有可挖 Top1（正解常在 O2 top-2..4），但 **B0 挖不动** → 必须让 O2 自己推高相对最强错误的 `margin_cw`（同题 hard-neg / set preference），不是再融 B0。
 
 **下一步（hold 浅融合/输入消融）：** 设计同 annotate 池内「正解 vs 同题最强错误」preference 续训烟测；未过 smoke 不上全量。
+
+### GitHub 同步（2026-10-17 17:40）
+
+推送到 `https://github.com/clutch-61/latenttts-experiment-pack`（`ec76c8b` + 后续 experiment_reports commit）：
+- 叙事/交接：`PAPER_NARRATIVE.md`（中/英）、`PLAN.md`、`HANDOFF_EXPERIMENT_REPORT.md`、README 索引
+- 诊断报告：`tables/o2_input_mode/`、`tables/scorer_axis_5seed/auc_to_top1/`、`o2_advantage_slices/`；全量摘要镜像 `tables/experiment_reports/`（无多 MB 逐题 dump）
+- 代码：`scripts/o2_*.py` 等分析/训练脚本；`src/infer_gpt2_rm.py`（`prm_input_mode`）；补齐 `training_args/*`
+- **未入库：** 权重、checkpoints、逐题 BoN JSON dump（体积大；本地 `LatentTTS-main/results/full/` 保留）
