@@ -1,0 +1,8 @@
+# CoLaR p2v2 vs fixed_t freeze (same protocol: no ###, latent_length=16, noise)
+# Do NOT compare deltas against official ###+max_L=64 freeze (40.56).
+
+metric          fixed_t_freeze   colar_p2v2    delta
+Greedy          22.44            34.42        +11.98
+Cov@16          35.48            49.58        +14.10
+Maj@16          23.73            36.85        +13.12
+Pass@1@16       22.89            33.70        +10.81

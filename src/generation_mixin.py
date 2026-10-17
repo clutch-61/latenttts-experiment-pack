@@ -622,40 +622,36 @@ class LatentGenerationMixin(GenerationMixin):
             streamer.end()
 
         if return_dict_in_generate:
-            latent_indices = (input_ids == self.config.latent_id).nonzero()[:, 1]
-            latent_indices = latent_indices.view(batch_size, generation_config.latent_length)
-            # 如果latent_indices每一row都是一样的，则不做cat，直接返回
-            if latent_indices.unique(dim=0).shape[0] == 1:
-                if generation_config.concat_inputs:
-                    latent_thoughts = model_kwargs["inputs_embeds"][:, : latent_indices[0][-1] + 1]
-                else:
-                    latent_thoughts = model_kwargs["inputs_embeds"][
-                        :, latent_indices[0][0] : latent_indices[0][-1] + 1
-                    ]
-                    assert (
-                        input_ids[:, latent_indices[0][0] : latent_indices[0][-1] + 1]
-                        == self.config.latent_id
-                    ).all()
+            # Fixed latent_length (COCONUT/CODI) or variable max_latent_length (CoLaR).
+            # Build per-row latent spans then stack (truncate to min length if uneven).
+            D = model_kwargs["inputs_embeds"].size(-1)
+            per_row = []
+            for b in range(batch_size):
+                idxs = (input_ids[b] == self.config.latent_id).nonzero(as_tuple=False).flatten()
+                if idxs.numel() == 0:
+                    per_row.append(model_kwargs["inputs_embeds"].new_zeros(0, D))
+                    continue
+                first_i = int(idxs[0].item())
+                last_i = int(idxs[-1].item())
+                per_row.append(model_kwargs["inputs_embeds"][b, first_i : last_i + 1])
+            lengths = [t.size(0) for t in per_row]
+            if not lengths or max(lengths) == 0:
+                latent_thoughts = model_kwargs["inputs_embeds"].new_zeros(batch_size, 0, D)
             else:
-                latent_thoughts = []
-                lengths = set()
-                for b in range(batch_size):
-                    first_latent_idx = latent_indices[b][0]
-                    last_latent_idx = latent_indices[b][-1]
-                    length = last_latent_idx - first_latent_idx + 1
-                    lengths.add(length)
-                    latent_thoughts.append(
-                        model_kwargs["inputs_embeds"][b, first_latent_idx : last_latent_idx + 1]
-                    )
-                # if they are all the same length, stack, else remain a list
-                if len(lengths) == 1:
-                    latent_thoughts = torch.stack(latent_thoughts, dim=0)
-                else:
-                    min_length = min(lengths)
-                    latent_thoughts = [
-                        latent_thoughts[b][:min_length] for b in range(batch_size)
-                    ]
-                    latent_thoughts = torch.stack(latent_thoughts, dim=0)
+                # Prefer fixed latent_length when set; else truncate to min positive length.
+                target_L = generation_config.latent_length
+                if target_L is None:
+                    target_L = min(L for L in lengths if L > 0)
+                clipped = []
+                for t in per_row:
+                    if t.size(0) == 0:
+                        clipped.append(model_kwargs["inputs_embeds"].new_zeros(target_L, D))
+                    elif t.size(0) >= target_L:
+                        clipped.append(t[:target_L])
+                    else:
+                        pad = model_kwargs["inputs_embeds"].new_zeros(target_L - t.size(0), D)
+                        clipped.append(torch.cat([t, pad], dim=0))
+                latent_thoughts = torch.stack(clipped, dim=0)
             return LatentGenerateDecoderOnlyOutput(
                 sequences=input_ids,
                 sequences_embeds=model_kwargs["inputs_embeds"],

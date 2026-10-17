@@ -64,13 +64,17 @@
 | A (COCONUT) | + p2mmd05 | O2 | ✅ 34.80（+2.73，方向稳；跨池警告见下） |
 | B (CODI) | 原版冻结 | O2 | ✅ 40.94 |
 | B (CODI) | + CODIp2 | O2 | ✅ 42.00（+1.06，同池） |
-| C (CoLaR) | 原版冻结 | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11 / Cov@64 77.79 / Maj@64 47.16 |
-| C (CoLaR) | + Colar-p2（answer_beat+SF-C） | 同协议 | ❌ 崩塌：Greedy 40.56→1.59 / Cov@16 64.97→7.51（答成 Answer:0） |
+| C (CoLaR) | 原版冻结（官方 `###`+max_L=64） | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11 / Cov@64 77.79 / Maj@64 47.16 |
+| C (CoLaR) | + Colar-p2 v1（官方同协议） | 同协议 | ❌ 崩塌：Greedy 40.56→1.59 / Cov@16 64.97→7.51 |
+| C (CoLaR) | 冻结 fixed_t（T=16，无 `###`） | Greedy/Cov/Maj | ✅ 22.44 / 35.48 / 23.73（**与官方分表**） |
+| C (CoLaR) | + Colar-p2v2（fixed_t 自洽） | 同 fixed_t | ✅ **34.42 / 49.58 / 36.85**（底座内 +12.0 / +14.1 / +13.1） |
+
+详情与纪律：[`COLAR_ADAPTATION.md`](COLAR_ADAPTATION.md)。
 
 **写作逻辑：**
 - CODI 原版显著高于 COCONUT → 归因底座压缩能力与自蒸馏初始化；
 - 重点：在 CODI 极强基线上，CODIp2 依然推高 Top1（40.94 → 42.00），证明 p2 是通用潜空间强化机制，非针对弱模型的过拟合。
-- CoLaR 提供 **非 GPT-2** 第三点：若底座内 Δ 同向，则策略增益不绑死 recurrence/蒸馏家族。
+- CoLaR 提供 **非 GPT-2** 第三点：v1 证明「盲目移植会崩」；v2 在 **策略自洽 fixed_t** 下底座内正 Δ，**不可**与官方 40.56 混成同一 Δ，也**不可**写成已接 O2 的完整闭环。
 
 **跨池警告：** 底座 A 的冻 O2 与 p2mmd05+O2 的候选池 cov/maj 不等（新协议下 51.02/33.74 vs 52.99/36.32），方向稳但非严格同池，写作须标「同协议、seed 对齐，非逐条同池」。底座 B 侧 cov/maj 全等，干净。
 

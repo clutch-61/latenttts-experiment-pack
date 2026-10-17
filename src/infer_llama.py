@@ -21,11 +21,14 @@ from .utils import pass_at_k_mean, InferenceCollator
 @torch.no_grad()
 def main(
     model_type: Literal["colar"] = "colar",
+    model_id: str | None = None,
     model_dtype: Literal["bf16", "fp16", "fp32"] = "fp32",
     data_path: str = "data/gsm_test.json",
     n_samples: int = 1,
     batch_size: int = 512,
-    max_latent_length: int = 64,
+    max_latent_length: int | None = 64,
+    latent_length: int | None = None,
+    prompt_style: Literal["official", "fixed_t"] = "official",
     max_new_tokens: int | None = 128,
     do_sample: bool = True,
     sampling_by: Literal["dropout", "noise"] = "dropout",
@@ -35,14 +38,16 @@ def main(
     accelerator = Accelerator()
     accelerator.wait_for_everyone()
 
+    ckpt_id = model_id or MODELS[model_type]["id"]
     if accelerator.is_main_process:
-        print(f"Loading {data_path}")
+        print(
+            f"Loading {data_path}; model={ckpt_id}; prompt_style={prompt_style} "
+            f"L={latent_length} max_L={max_latent_length}"
+        )
 
     class LatentLLM(MODELS[model_type]["class"], LatentGenerationMixin): ...
 
-    processing_class = AutoTokenizer.from_pretrained(
-        MODELS[model_type]["id"],
-    )
+    processing_class = AutoTokenizer.from_pretrained(ckpt_id)
     if processing_class.pad_token is None:
         processing_class.pad_token = processing_class.eos_token
     print(f"pad_token: {processing_class.pad_token} ({processing_class.pad_token_id})")
@@ -50,12 +55,18 @@ def main(
     latent_id = processing_class.convert_tokens_to_ids("<|latent|>")
     print(f"<|latent|>: {latent_id}")
 
-    start_id = -1
     end_id = processing_class.convert_tokens_to_ids("###")
-
+    if prompt_style == "fixed_t":
+        # Align with train_p123 CoLaR p2v2: fixed T; ')' is latent_start.
+        start_id = processing_class.convert_tokens_to_ids(")")
+        if latent_length is None:
+            latent_length = 16
+        max_latent_length = None
+    else:
+        start_id = -1
     generation_config = LatentGenerationConfig(
         max_new_tokens=max_new_tokens,
-        latent_length=None,
+        latent_length=latent_length,
         max_latent_length=max_latent_length,
         latent_do_sample=do_sample,
         latent_do_sample_by=sampling_by if do_sample else None,
@@ -69,7 +80,7 @@ def main(
     )
 
     model = LatentLLM.from_pretrained(
-        MODELS[model_type]["id"],
+        ckpt_id,
         latent_id=latent_id,
         latent_start_id=start_id,
         latent_end_id=end_id,
@@ -90,7 +101,10 @@ def main(
     # rich.print(model)
 
     dataset = datasets.Dataset.from_json(data_path)
-    question_template = "Question: {} Let's think step by step:(Thinking speed: 2)###"
+    if prompt_style == "fixed_t":
+        question_template = "Question: {} Let's think step by step:(Thinking speed: 2)"
+    else:
+        question_template = "Question: {} Let's think step by step:(Thinking speed: 2)###"
     dataset = dataset.map(
         lambda x, idx: {
             "idx": idx,

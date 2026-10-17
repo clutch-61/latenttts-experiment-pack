@@ -2554,6 +2554,20 @@ Hold：不盲 λ_MMD；不把崩塌写成 CoLaR 生成能力差。
 
 Do not：上 SLPO 冒充第三底座；盲 λ_MMD；未过探针宣称修好。
 
+
+### Colar-p2v2 结果（2026-10-17；GitHub 同步）
+
+同协议 fixed_t（无 `###`，T=16，noise，无 MCLinear）：
+
+| | Greedy | Cov@16 | Maj@16 |
+|--|--:|--:|--:|
+| 冻结 fixed_t | 22.44 | 35.48 | 23.73 |
+| Colar-p2v2 | **34.42** | **49.58** | **36.85** |
+| Δ | +12.0 | +14.1 | +13.1 |
+
+官方 `###`+max_L 冻结 40.56 **另表**，不与上表混 Δ。v1 崩塌结论不变。适配文档：GitHub `COLAR_ADAPTATION.md`。
+
+
 ### GitHub：CLOSED_LOOP_STORY + 实验补全反省（2026-10-17 14:50）
 
 - 已将 `CLOSED_LOOP_STORY.md` 放入 `latenttts-experiment-pack`，README / EXPERIMENTS 顶部加链接。

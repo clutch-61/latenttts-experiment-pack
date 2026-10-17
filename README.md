@@ -23,6 +23,10 @@
 
 对应分析脚本：`scripts/o2_input_mode_compare.py`、`o2_auc_to_top1_diagnosis.py`、`o2_topk_rerank.py`、`o2_advantage_slices.py`。`src/infer_gpt2_rm.py` 支持 `--prm_input_mode={full,latent_only,text_only}`。
 
+### CoLaR 第三底座适配
+
+完整说明：[`COLAR_ADAPTATION.md`](COLAR_ADAPTATION.md)。要点：Llama+LatentHead（d=2048）**不能**接 GPT-2 O2；官方冻结 Greedy **40.56**；p2 v1 官方协议崩塌；**p2v2 fixed_t** 底座内 Greedy 22.44→**34.42**。入口：`scripts/train_colar_p2v2.sh`、`eval_colar_fixed_t.sh`、`src/infer_llama.py`。
+
 ---
 
 ## 0. 核心发现（一句话版）
