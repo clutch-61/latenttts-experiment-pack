@@ -4,7 +4,9 @@
 
 本仓库提供：**原始基线**、**自家续训方法（p2mmd05）**，以及按同一协议评测的 **外部生成器（SLPO、CODI）** 和 **在 CODI 上再跑同一套续训（CODIp2）**。权重和完整采样 dump 需自备；数字摘要在 [`tables/`](tables/)。
 
-> 论文主线的三主实验规划见 **[`EXPERIMENTS.md`](EXPERIMENTS.md)**（生成器策略对比 / 底座泛化 / 打分器对比）。
+> **先读这两份再读数字表：**
+> 1. [`CLOSED_LOOP_STORY.md`](CLOSED_LOOP_STORY.md) — 论文 **Experiments** 体例草稿（协议 / 主表 / Takeaway / 限制；生成器×打分器闭环）。
+> 2. [`EXPERIMENTS.md`](EXPERIMENTS.md) — 三主实验规划与当前缺口清单（生成器策略对比 / 底座泛化 / 打分器对比）。
 
 ---
 
