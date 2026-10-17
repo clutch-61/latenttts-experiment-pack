@@ -1,0 +1,6 @@
+model	training_objective	order_pair_acc	hierarchy_consistency	protocol
+O2	outcome+order/hierarchy-pref	0.971772	0.893618	valid-64 full corrects=1 (existing)
+B0	official contrastive CE	0.860011	0.769471	valid-64 full corrects=1 (existing)
+B1	BCE-only	0.765996	0.728443	valid-64 full corrects=1 (existing)
+SWIFT	outcome-only BCE	0.448664	0.241620	valid-64 full corrects=1 (new)
+HSRM	outcome-only BCE	0.475143	0.441434	valid-64 full corrects=1 (new)

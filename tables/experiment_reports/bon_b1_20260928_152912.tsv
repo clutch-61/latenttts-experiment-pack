@@ -1,0 +1,10 @@
+split	prm	n	seed	acc	cov	vot	log
+gsm_test	B1	4	42	32.0697%	41.0917%	32.8279%	logs/bon_b1/gsm_test_B1_N4_s42_20260928_152912.log
+gsm_test	B1	16	42	32.1456%	51.0993%	34.3442%	logs/bon_b1/gsm_test_B1_N16_s42_20260928_152912.log
+gsm_test	B1	64	42	31.1600%	57.9985%	33.7377%	logs/bon_b1/gsm_test_B1_N64_s42_20260928_152912.log
+hard	B1	4	42	7.1320%	9.7876%	7.5873%	logs/bon_b1/hard_B1_N4_s42_20260928_152912.log
+hard	B1	16	42	6.9803%	12.2914%	7.2079%	logs/bon_b1/hard_B1_N16_s42_20260928_152912.log
+hard	B1	64	42	6.6768%	14.5675%	7.0561%	logs/bon_b1/hard_B1_N64_s42_20260928_152912.log
+multiarith	B1	4	42	79.6552%	86.2069%	78.2759%	logs/bon_b1/multiarith_B1_N4_s42_20260928_152912.log
+multiarith	B1	16	42	79.3103%	92.4138%	79.3103%	logs/bon_b1/multiarith_B1_N16_s42_20260928_152912.log
+multiarith	B1	64	42	82.0690%	94.1379%	79.8276%	logs/bon_b1/multiarith_B1_N64_s42_20260928_152912.log

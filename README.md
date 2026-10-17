@@ -19,7 +19,7 @@
 | [`tables/scorer_axis_5seed/auc_to_top1/REPORT.md`](tables/scorer_axis_5seed/auc_to_top1/REPORT.md) | AUC→Top1：lost_to_strongest_wrong；O2↔B0 救回；融合≈0 |
 | [`tables/scorer_axis_5seed/auc_to_top1/topk_rerank_NOTE.md`](tables/scorer_axis_5seed/auc_to_top1/topk_rerank_NOTE.md) | O2 top-k→B0：可部署≈0，oracle top2–4 有上界 |
 | [`tables/scorer_axis_5seed/o2_advantage_slices/REPORT.md`](tables/scorer_axis_5seed/o2_advantage_slices/REPORT.md) | DiD / 对称救回 / 基线纠错切片 |
-| [`tables/results/`](tables/results/) | 全量汇报与 TSV 摘要镜像（不含多 MB 逐题 dump） |
+| [`tables/experiment_reports/`](tables/experiment_reports/) | 全量汇报与 TSV 摘要镜像（不含多 MB 逐题 dump） |
 
 对应分析脚本：`scripts/o2_input_mode_compare.py`、`o2_auc_to_top1_diagnosis.py`、`o2_topk_rerank.py`、`o2_advantage_slices.py`。`src/infer_gpt2_rm.py` 支持 `--prm_input_mode={full,latent_only,text_only}`。
 

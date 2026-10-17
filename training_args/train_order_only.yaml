@@ -1,0 +1,41 @@
+# O1: B1 + order preference only (λ_hier=0); control for hierarchical term
+run_name: "order_only_bce"
+metric_for_best_model: "test_n_64_recall_at_1"
+output_dir: "outputs/latentrm_order_only"
+loss_type: "bce"
+
+model_id: "checkpoints/coconut"
+generator_model_id: "checkpoints/coconut"
+model_type: "coconut"
+model_family: "gpt2"
+
+train_dataset: "latent-data/coconut/train"
+valid_dataset:
+  "test_n_64": "latent-data/coconut/valid-64"
+  "test_n_4": "latent-data/coconut/valid-4"
+
+pref_lambda: 0.5
+order_margin: 0.05
+hierarchy_margin: 0.0125
+lambda_hier: 0.0
+pref_score_reduce: "mean_log_prob"
+corruption_names: "adjacent_swap,segment_swap,multi_segment,full_reverse"
+pref_on_correct_only: true
+
+seed: 42
+per_device_train_batch_size: 128
+per_device_eval_batch_size: 512
+gradient_accumulation_steps: 4
+optim: "paged_adamw_8bit"
+lr_scheduler_type: "cosine"
+warmup_ratio: 0.1
+max_grad_norm: 1.0
+num_train_epochs: 20
+early_stopping_patience: 16
+eval_frequency: 4
+learning_rate: 1.0e-4
+bf16: true
+save_only_model: false
+save_total_limit: 8
+logging_steps: 5
+report_to: "none"

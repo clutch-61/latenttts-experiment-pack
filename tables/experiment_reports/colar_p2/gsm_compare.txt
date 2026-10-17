@@ -1,0 +1,11 @@
+# CoLaR within-base Δ (GSM-Test, Thinking speed 2, max_latent_length=64)
+# Colar-p2 = outputs/colar_p2_20261017_005021 (unwrapped MCLinear)
+
+metric          frozen    colar_p2     delta
+Greedy          40.56      1.59       -38.97
+Cov@16          64.97      7.51       -57.46
+Maj@16          45.11      0.76       -44.35
+Cov@64          77.79       —           —
+Maj@64          47.16       —           —
+
+VERDICT: collapse. Do not claim p2 gain on CoLaR. Do not blind λ_MMD↑.

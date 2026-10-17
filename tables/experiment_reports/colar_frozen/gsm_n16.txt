@@ -1,0 +1,9 @@
+# CoLaR frozen GSM-Test N=16 dropout_p=0.03
+# protocol: Thinking speed 2, max_latent_length=64, bf16
+Coverage: 64.9735
+Pass@1: 33.7472
+Pass@2: 42.7363
+Pass@4: 50.8199
+Pass@8: 58.2231
+Pass@16: 64.9735
+Voting Accuracy: 45.1099

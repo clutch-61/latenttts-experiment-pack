@@ -1,0 +1,4 @@
+split	n	seed	acc	cov	vot	log
+gsm_test	4	42	32.7521%	41.0917%	32.8279%	logs/bon_mv/gsm_test_N4_s42_20260928_122615.log
+gsm_test	16	42	33.4344%	51.0993%	34.3442%	logs/bon_mv/gsm_test_N16_s42_20260928_122615.log
+gsm_test	64	42	33.7377%	57.9985%	33.7377%	logs/bon_mv/gsm_test_N64_s42_20260928_122615.log

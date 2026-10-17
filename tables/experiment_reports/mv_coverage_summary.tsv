@@ -1,0 +1,12 @@
+split	n	seed	cov	vot	acc_rm_ref	log
+gsm_test	4	42	41.0917%	32.8279%	32.7521%	logs/bon_mv/gsm_test_N4_s42_20260928_122615.log
+gsm_test	16	42	51.0993%	34.3442%	33.4344%	logs/bon_mv/gsm_test_N16_s42_20260928_122615.log
+gsm_test	16	43	50.7202%	33.7377%	31.9939%	logs/bon_stability/gsm_test_B0_N16_s43_20260928_101417.log
+gsm_test	16	44	51.4026%	33.3586%	33.3586%	logs/bon_stability/gsm_test_O2_N16_s44_20260928_101417.log
+gsm_test	64	42	57.9985%	33.7377%	33.7377%	logs/bon_mv/gsm_test_N64_s42_20260928_122615.log
+hard	4	42	9.7876%	7.5873%	7.2838%	logs/bon_stability/hard_B0_N4_s42_20260928_101417.log
+hard	16	42	12.2914%	7.2079%	6.9044%	logs/bon_stability/hard_B0_N16_s42_20260928_101417.log
+hard	64	42	14.5675%	7.0561%	7.5114%	logs/bon_stability/hard_O2_N64_s42_20260928_101417.log
+multiarith	4	42	86.2069%	78.2759%	78.2759%	logs/bon_stability/multiarith_B0_N4_s42_20260928_101417.log
+multiarith	16	42	92.4138%	79.3103%	78.7931%	logs/bon_stability/multiarith_B0_N16_s42_20260928_101417.log
+multiarith	64	42	94.1379%	79.8276%	84.8276%	logs/bon_stability/multiarith_official_N64_s42_20260928_101417.log

@@ -1,0 +1,5 @@
+scorer	seed42	seed43	seed44	mean	std	protocol
+B0_LatentRM	31.69	33.74	33.21	32.88	1.07	BoN N=16 top1 frozen-COCONUT GSM8K-Test（同池配对）
+O2_LatentRM	32.07	34.57	34.34	33.66	1.38	BoN N=16 top1 frozen-COCONUT GSM8K-Test（同池配对）
+SWIFT_Latent	33.5861	34.5716	34.0409	34.0662	0.4933	BoN N=16 top1 frozen-COCONUT GSM8K-Test（同池配对）
+HSRM_Latent	32.6005	34.4200	34.2684	33.7630	1.0096	BoN N=16 top1 frozen-COCONUT GSM8K-Test（同池配对）

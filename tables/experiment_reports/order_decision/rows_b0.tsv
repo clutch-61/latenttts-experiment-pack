@@ -1,0 +1,10 @@
+b0	gpt2	4	adjacent_swap	0.7850	0.5780	0.0000	1000
+b0	gpt2	4	segment_swap	0.9340	0.8630	0.0000	1000
+b0	gpt2	4	multi_segment	0.8792	0.5340	0.0040	1000
+b0	gpt2	4	full_reverse	0.9670	0.9670	0.0000	1000
+b0	gpt2	4	mixed	0.8632	0.5940	0.0000	1000
+b0	gpt2	16	adjacent_swap	0.7908	0.2990	0.0000	1000
+b0	gpt2	16	segment_swap	0.9359	0.7610	0.0000	1000
+b0	gpt2	16	multi_segment	0.8728	0.0490	0.0000	1000
+b0	gpt2	16	full_reverse	0.9670	0.9670	0.0000	1000
+b0	gpt2	16	mixed	0.8847	0.1930	0.0000	1000

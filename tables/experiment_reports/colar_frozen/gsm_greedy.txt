@@ -1,0 +1,5 @@
+# CoLaR frozen GSM-Test greedy N=1
+# protocol: Thinking speed 2, max_latent_length=64, bf16, do_sample=False
+Pass@1: 40.5610
+Voting Accuracy: 40.5610
+Coverage(=greedy): 40.5610

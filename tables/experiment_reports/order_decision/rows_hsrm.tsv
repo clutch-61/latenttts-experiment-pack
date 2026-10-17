@@ -1,0 +1,10 @@
+hsrm	light	4	adjacent_swap	0.6010	0.3150	0.0000	1000
+hsrm	light	4	segment_swap	0.4733	0.1860	0.0000	1000
+hsrm	light	4	multi_segment	0.5082	0.1610	0.0040	1000
+hsrm	light	4	full_reverse	0.3820	0.3820	0.0000	1000
+hsrm	light	4	mixed	0.5288	0.1880	0.0000	1000
+hsrm	light	16	adjacent_swap	0.6134	0.1150	0.0000	1000
+hsrm	light	16	segment_swap	0.4981	0.0290	0.0000	1000
+hsrm	light	16	multi_segment	0.5110	0.0110	0.0000	1000
+hsrm	light	16	full_reverse	0.3820	0.3820	0.0000	1000
+hsrm	light	16	mixed	0.5052	0.0330	0.0000	1000

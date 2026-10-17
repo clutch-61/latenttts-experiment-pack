@@ -1,0 +1,24 @@
+seed	arm	gate	B0_ruler_top1	O2_ruler_top1	voting_quality
+42	o2	O2	33.06	34.34	34.80
+42	swift	SWIFT	33.89	34.72	35.48
+43	o2	O2	32.83	34.19	35.94
+43	swift	SWIFT	33.21	33.66	34.87
+44	o2	O2	32.52	34.50	34.80
+44	swift	SWIFT	33.36	35.18	35.10
+45	o2	O2	33.43	34.19	34.65
+45	swift	SWIFT	33.97	33.66	35.03
+46	o2	O2	34.12	34.50	34.87
+46	swift	SWIFT	33.36	34.72	34.65
+MEAN	o2	O2	33.19	34.34	35.01
+STD	o2	O2	0.61	0.15	0.52
+MEAN	swift	SWIFT	33.56	34.39	35.03
+STD	swift	SWIFT	0.35	0.69	0.31
+
+seed	B0_ruler_swift_minus_o2	O2_ruler_swift_minus_o2	voting_swift_minus_o2
+42	+0.83	+0.38	+0.68
+43	+0.38	-0.53	-1.06
+44	+0.83	+0.68	+0.30
+45	+0.53	-0.53	+0.38
+46	-0.76	+0.23	-0.23
+MEAN	+0.36	+0.05	+0.02
+STD	0.66	0.55	0.69

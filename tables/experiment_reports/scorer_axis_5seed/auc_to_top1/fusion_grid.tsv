@@ -1,0 +1,39 @@
+pool	method	alpha	val_top1	test_top1	selected
+frozen	o2	1.00	34.3939	33.5545	
+frozen	b0	1.00	33.3333	32.5687	
+frozen	score_z	0.30	33.6364	33.0616	
+frozen	score_z	0.40	33.9394	33.0806	
+frozen	score_z	0.50	34.4697	33.7441	
+frozen	score_z	0.60	34.5455	33.8957	
+frozen	score_z	0.70	34.6212	34.0284	
+frozen	rank_avg	0.30	34.5455	33.6114	
+frozen	rank_avg	0.40	34.8485	33.7062	
+frozen	rank_avg	0.50	34.9242	33.8578	
+frozen	rank_avg	0.60	35.1515	33.6114	VAL_BEST
+frozen	rank_avg	0.70	34.4697	33.8768	
+frozen	disagree_score_z	0.30	33.6364	33.0616	
+frozen	disagree_score_z	0.50	34.4697	33.7441	
+frozen	disagree_score_z	0.70	34.6212	34.0284	
+frozen	disagree_rank_avg	0.30	34.5455	33.6114	
+frozen	disagree_rank_avg	0.50	34.9242	33.8578	
+frozen	disagree_rank_avg	0.70	34.4697	33.8768	
+frozen	disagree_prefer_o2	1.00	34.3939	33.5545	
+p2	o2	1.00	38.4848	35.2796	
+p2	b0	1.00	36.0606	34.0284	
+p2	score_z	0.30	36.5909	34.2749	
+p2	score_z	0.40	36.7424	34.4265	
+p2	score_z	0.50	37.8030	35.2038	
+p2	score_z	0.60	38.4091	35.4692	
+p2	score_z	0.70	38.6364	35.3934	
+p2	rank_avg	0.30	37.1212	35.2038	
+p2	rank_avg	0.40	37.5000	35.1090	
+p2	rank_avg	0.50	38.0303	35.3744	
+p2	rank_avg	0.60	38.4848	35.2986	
+p2	rank_avg	0.70	38.9394	35.2038	VAL_BEST
+p2	disagree_score_z	0.30	36.5909	34.2749	
+p2	disagree_score_z	0.50	37.8030	35.2038	
+p2	disagree_score_z	0.70	38.6364	35.3934	
+p2	disagree_rank_avg	0.30	37.1212	35.2038	
+p2	disagree_rank_avg	0.50	38.0303	35.3744	
+p2	disagree_rank_avg	0.70	38.9394	35.2038	
+p2	disagree_prefer_o2	1.00	38.4848	35.2796	

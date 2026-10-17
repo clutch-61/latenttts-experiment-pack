@@ -1,0 +1,10 @@
+# CoLaR frozen GSM-Test N=64 dropout_p=0.03
+Coverage: 77.7862
+Pass@1: 33.5920
+Pass@2: 42.6445
+Pass@4: 50.8797
+Pass@8: 58.4592
+Pass@16: 65.4514
+Pass@32: 71.9222
+Pass@64: 77.7862
+Voting Accuracy: 47.1569

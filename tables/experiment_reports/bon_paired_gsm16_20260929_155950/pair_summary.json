@@ -1,0 +1,93 @@
+{
+  "n_common": 1319,
+  "n_hash_mismatch": 0,
+  "candidates_identical": true,
+  "acc": {
+    "o2": 0.3502653525398029,
+    "o1": 0.3100833965125095,
+    "b1": 0.3214556482183472
+  },
+  "o2_vs_o1": {
+    "a_only": 94,
+    "b_only": 41,
+    "both_right": 368,
+    "both_wrong": 816
+  },
+  "o2_vs_b1": {
+    "a_only": 77,
+    "b_only": 39,
+    "both_right": 385,
+    "both_wrong": 818
+  },
+  "o1_vs_b1": {
+    "a_only": 56,
+    "b_only": 71,
+    "both_right": 353,
+    "both_wrong": 839
+  },
+  "paired_diff_pp": {
+    "o2_minus_o1": {
+      "mean_pp": 4.01819560272934,
+      "ci95_pp": [
+        2.3483699772554973,
+        5.837755875663381
+      ]
+    },
+    "o2_minus_b1": {
+      "mean_pp": 2.8809704321455647,
+      "ci95_pp": [
+        1.288855193328279,
+        4.473085670962851
+      ]
+    },
+    "o1_minus_b1": {
+      "mean_pp": -1.1372251705837757,
+      "ci95_pp": [
+        -2.8809704321455647,
+        0.45489006823351025
+      ]
+    }
+  },
+  "hash_mismatch_examples": [],
+  "meta": {
+    "o2": {
+      "prm_id": "outputs/latentrm_order_pref/best",
+      "generator_type": "coconut",
+      "data_path": "data/gsm_test.json",
+      "num_return_sequences": 16,
+      "seed": 42,
+      "sort_by_len": true,
+      "prm_mode": "best_of_n",
+      "n_examples": 1319,
+      "accuracy": 0.3502653525398029,
+      "coverage": 0.5109931766489765,
+      "voting_accuracy": 0.3434420015163002
+    },
+    "o1": {
+      "prm_id": "outputs/latentrm_order_only/best",
+      "generator_type": "coconut",
+      "data_path": "data/gsm_test.json",
+      "num_return_sequences": 16,
+      "seed": 42,
+      "sort_by_len": true,
+      "prm_mode": "best_of_n",
+      "n_examples": 1319,
+      "accuracy": 0.3100833965125095,
+      "coverage": 0.5109931766489765,
+      "voting_accuracy": 0.3434420015163002
+    },
+    "b1": {
+      "prm_id": "outputs/latentrm_baseline_bce/best",
+      "generator_type": "coconut",
+      "data_path": "data/gsm_test.json",
+      "num_return_sequences": 16,
+      "seed": 42,
+      "sort_by_len": true,
+      "prm_mode": "best_of_n",
+      "n_examples": 1319,
+      "accuracy": 0.3214556482183472,
+      "coverage": 0.5109931766489765,
+      "voting_accuracy": 0.3434420015163002
+    }
+  }
+}
