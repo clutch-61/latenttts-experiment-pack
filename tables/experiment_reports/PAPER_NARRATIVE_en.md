@@ -157,7 +157,7 @@ Self-rollouts must solve the task and match teacher content *as sets*; order rem
 
 ### 3.5 Generator post-training that reuses the order-aware scorer (p2)
 
-With $s_\phi$ fixed or periodically refreshed, each post-training step samples $k$ student trajectories and one teacher trajectory, scores them with O2 (B0 as a health constraint), selects a CE target, and updates the generator with SF-C. Optional content-view MMD implements Module II inside this loop. The released recipe **p2mmd05** enables MMD at a validated coefficient. Crucially, the same $s_\phi$ interface is used for BoN at test time—exploration and realization share one scorer.
+With $s_\phi$ fixed or periodically refreshed, each post-training step samples $k$ student trajectories and one teacher trajectory, scores them with O2 (B0 as a health constraint), selects a CE target, and updates the generator with SF-C. Optional content-view MMD implements Module II inside this loop. The released recipe **mmd_cold** (coconut cold-start + dual_beat + SF-C + $\lambda_{\mathrm{MMD}}{=}0.05$, 1500 steps; lock `outputs/p123_mmd_cold`) enables MMD at a validated coefficient. Warm-start **p2mmd05** is demoted to a control. Crucially, the same $s_\phi$ interface is used for BoN at test time—exploration and realization share one scorer.
 
 ### 3.6 What each term is *not*
 
@@ -205,22 +205,24 @@ Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); **$+1.49$** [$0.59,2.38$] (p
 
 ### 5.2 Reusing Module I inside generator post-training (p2)
 
-**Setup.** COCONUT-GPT2; frozen / SLPO / Dropout-GRPO / p2mmd05; **3000** steps matched; evaluate with **B0** only.
+**Setup.** COCONUT-GPT2; frozen / SLPO / Dropout-GRPO / **mmd_cold**; RL controls matched at **3000** steps; evaluate with **B0** only on the generator axis. System lock also reports O2 (see `paper_mmd_cold/LOCK.md`).
 
 | Method | Cov@16 | B0 Top-1 | $\Delta$ |
 |--------|-------:|---------:|---------:|
 | Frozen | 50.67 | 32.88 | — |
 | SLPO (3000) | 50.90 | 32.88 | $+0.00$ |
 | Dropout-GRPO (3000) | 51.23 | 32.85 | $-0.03$ |
-| **p2mmd05** | **53.88** | **34.32** | **$+1.44$** |
+| **mmd_cold** | **$\sim$54.0** | **35.03** | **$+2.15$** |
 
-**Transfer.** CODI frozen $40.94$ $\rightarrow$ CODIp2 $42.00$ (**$+1.06$**, same pool, O2 Top-1).
+System lock GSM N16 **O2** 3-seed: **$36.32\pm0.40$** (vs dualBeat $35.81$; legacy p2mmd05 $35.48$).
 
-Matched short-budget RL does not beat frozen; p2 does. This is not a full-budget official RL claim ($\sim 4$–$5\times 10^4$ steps).
+**Transfer.** CODI frozen $40.94$ $\rightarrow$ CODIp2 $42.00$ (**$+1.06$**, same pool, O2 Top-1; not re-run after the lock swap).
+
+Matched short-budget RL does not beat frozen; mmd_cold / p2 does. This is not a full-budget official RL claim ($\sim 4$–$5\times 10^4$ steps).
 
 ### 5.3 Modules II–III status
 
-Content-view MMD inside p2mmd05 is the currently exercised set-alignment path; a clean Chamfer-vs-MMD bake-off and backprop-through-rollout curriculum remain staged follow-ups (Appendix). Incomplete non-GPT-2 ports and missing SFT/RFT controls are likewise deferred with explicit non-claims.
+Content-view MMD inside **mmd_cold** is the exercised set-alignment path and is slightly ahead of no-MMD dualBeat; warm-start p2mmd05 is not the success story. A clean Chamfer-vs-MMD bake-off and backprop-through-rollout curriculum remain staged follow-ups (Appendix). Incomplete non-GPT-2 ports and missing SFT/RFT controls are likewise deferred with explicit non-claims.
 
 ---
 

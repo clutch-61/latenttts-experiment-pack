@@ -322,3 +322,7 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 | MultiArith | 64 | 85.52 / 87.76 / 85.69 / 94.66 | 82.24 / 87.59 / 83.62 / 96.03 |
 
 论文口径下基线另有一套 **dropout=0.2** 的 A+B0（GSM N16 top1 **28.43**），与上表关掉 dropout 的 33.74 **不要混比**。
+
+## System lock (2026-10-19)
+
+Official generator: **mmd_cold** (`tables/experiment_reports/paper_mmd_cold/LOCK.md`). Replaces p2mmd05 warm-start lock.
