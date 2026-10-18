@@ -2,6 +2,8 @@
 
 > 实验章节成稿草稿（可直接对照写论文 §Experiments）：[`CLOSED_LOOP_STORY.md`](CLOSED_LOOP_STORY.md)。
 
+> **2026-10-19 改锁：** G-Ours = **mmd_cold**（取代 p2mmd05）。权威主表/消融：`tables/experiment_reports/paper_tables_mmd_cold/`；锁矩阵：`tables/experiment_reports/paper_mmd_cold/`。
+
 
 > 锁定时间：2026-10-15。这是论文主线「生成器 ↔ 打分器协同」的顶层实验规划。每个实验统一：潜变量步数 **T=6**、奖励模型测试时**关 dropout**、种子 42、GSM8K-Test / GSM-Hard / MultiArith、主指标 **top1**、主 N∈{16,64}（N=1/4、wvote/maj/cov 进附录）。不跨生成器底座归因绝对分差。
 
@@ -31,7 +33,7 @@
 | G2 | COCONUT + RFT (Self-Training) | 正确轨迹过滤微调 | ❌ 需训（只筛答对样本重训） |
 | G3 | COCONUT + SLPO (RLOO) | 2026 外部强基线 | ✅ 同起点同预算（3000 步）已训 |
 | G4 | COCONUT + Dropout-GRPO | 2026 外部强基线 | ✅ 同起点同预算（3000 步）已训（同骨干适配版） |
-| G-Ours | COCONUT + p2（双门控+自强制+MMD） | 本文工作 | ✅ p2mmd05（B0/O2 全矩阵已出） |
+| G-Ours | COCONUT + **mmd_cold**（dual_beat+SF-C+λ_MMD=0.05） | 本文工作 | ✅ 全矩阵 `paper_mmd_cold/`；消融基线 dualBeat |
 
 **汇报指标：** N=1 Greedy、Coverage@16/64、BoN Top1（接 B0）。
 
@@ -42,9 +44,9 @@
 | G0 冻结 COCONUT | 50.67 | 32.88 | — |
 | G3 SLPO (RLOO 3000) | 50.90 | 32.88 | +0.00 |
 | G4 Dropout-GRPO (3000) | 51.23 | 32.85 | −0.03 |
-| **G-Ours p2mmd05** | **53.88** | **34.32** | **+1.44** |
+| **G-Ours mmd_cold** | **~54.0** | **35.03** | **+2.15** |
 
-逐 seed top1：G0 = 31.69 / 33.74 / 33.21；G3 = 32.07 / 33.28 / 33.28；G4 = 31.92 / 33.28 / 33.36；G-Ours = 34.04 / 34.72 / 34.19。
+逐 seed B0 top1（mmd_cold）：35.18 / 35.10 / 34.80。旧 p2mmd05≈34.3 已降级。
 
 **读数解读（诚实口径）：** 同起点、同 3000 步预算下，SLPO(RLOO) 与 Dropout-GRPO 的 B0 Top1 与冻结 COCONUT **持平**（−0.03~+0.00），训练时 `eval_reward` 全程 0.352–0.356 无提升——RL 在该预算下没学到东西；p2 同预算下 +1.44pp。**但注意预算口径不可直接等同**：官方 SLPO/GRPO 为 40000/50000 步，这里压到 3000（约 1/15）；且 RL 每步 `num_generations=8`（128 轨迹/步）远小于 p2 的 `k=64`（1024 轨迹/步）。所以严格结论是「**同 3000 步、RL 轨迹数天然劣势**下的对照」，不能宣传成「p2 打赢 SLPO/GRPO 论文分」。
 
@@ -61,7 +63,7 @@
 | 底座 | 训练策略 | 评测 | 状态 |
 |------|----------|------|------|
 | A (COCONUT) | 原版冻结 G0 | O2 | ✅ 冻 +O2 = 32.07 (GSM N16) |
-| A (COCONUT) | + p2mmd05 | O2 | ✅ 34.80（+2.73，方向稳；跨池警告见下） |
+| A (COCONUT) | + **mmd_cold** | O2 | ✅ **36.01**（3-seed **36.32±0.40**；vs 冻 +3.94 / ~+2.6） |
 | B (CODI) | 原版冻结 | O2 | ✅ 40.94 |
 | B (CODI) | + CODIp2 | O2 | ✅ 42.00（+1.06，同池） |
 | C (CoLaR) | 原版冻结（官方 `###`+max_L=64） | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11 / Cov@64 77.79 / Maj@64 47.16 |

@@ -326,3 +326,7 @@ CUDA_VISIBLE_DEVICES=0,3 bash scripts/train_eval_codi_p2mmd05.sh
 ## System lock (2026-10-19)
 
 Official generator: **mmd_cold** (`tables/experiment_reports/paper_mmd_cold/LOCK.md`). Replaces p2mmd05 warm-start lock.
+
+## Paper tables (2026-10-19)
+
+Official system **mmd_cold**. Main + ablation tables: [`tables/experiment_reports/paper_tables_mmd_cold/`](tables/experiment_reports/paper_tables_mmd_cold/). Fair dualBeat B0 matrix summary: `paper_dualbeat_dnone/SUMMARY.tsv`.

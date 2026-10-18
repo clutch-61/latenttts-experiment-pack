@@ -1,4 +1,5 @@
-> 论文叙事稿（匿名会议体例）：[`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md)。本文件为 Experiments 数字骨架。
+> 论文叙事稿（匿名会议体例）：[`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md)。本文件为 Experiments 数字骨架。  
+> **权威主表 / 消融（mmd_cold 锁）：** [`paper_tables_mmd_cold/MAIN_TABLES.md`](paper_tables_mmd_cold/MAIN_TABLES.md) · [`ABLATION_TABLES.md`](paper_tables_mmd_cold/ABLATION_TABLES.md) · 锁 [`p123/paper_mmd_cold/LOCK.md`](p123/paper_mmd_cold/LOCK.md)。
 
 # Experiments（主文草稿）
 
@@ -19,9 +20,10 @@
 | G0 Frozen | 50.67 | 32.88 | — |
 | G3 SLPO (3000) | 50.90 | 32.88 | +0.00 |
 | G4 Dropout-GRPO (3000) | 51.23 | 32.85 | −0.03 |
-| G-Ours **mmd_cold** | **~54.0** | **35.03** | **+2.15** |
+| dualBeat (−MMD） | 53.60 | 34.12±0.55 | +1.24 |
+| G-Ours **mmd_cold** | **54.03** | **35.03±0.20** | **+2.15** |
 
-逐 seed B0 Top-1（mmd_cold）：35.18 / 35.10 / 34.80。旧暖启对照 p2mmd05 约 34.3（3-seed）已降级，不作主锁。G3/G4 训练曲线上 `eval_reward` 停滞在 0.352–0.356。
+逐 seed B0 Top-1（mmd_cold）：35.18 / 35.10 / 34.80；dualBeat：33.66 / 34.72 / 33.97。旧暖启 p2mmd05 已降级。全矩阵见 `paper_tables_mmd_cold/MAIN_TABLES.md`。G3/G4 训练曲线上 `eval_reward` 停滞在 0.352–0.356。
 
 **Takeaway.** 在相同骨干下，p2（mmd_cold）提高 Cov 与 B0 Top-1；短预算 RL 对照未超过冻结。该结论**不等于**优于官方 SLPO/GRPO 全预算（其步数约 $4{\times}10^4$–$5{\times}10^4$，且每步 `num_generations` 小于本设定的 $k$）。
 

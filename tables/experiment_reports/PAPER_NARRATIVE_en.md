@@ -212,9 +212,10 @@ Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); **$+1.49$** [$0.59,2.38$] (p
 | Frozen | 50.67 | 32.88 | — |
 | SLPO (3000) | 50.90 | 32.88 | $+0.00$ |
 | Dropout-GRPO (3000) | 51.23 | 32.85 | $-0.03$ |
-| **mmd_cold** | **$\sim$54.0** | **35.03** | **$+2.15$** |
+| dualBeat (−MMD) | 53.60 | $34.12\pm0.55$ | $+1.24$ |
+| **mmd_cold** | **54.03** | **$35.03\pm0.20$** | **$+2.15$** |
 
-System lock GSM N16 **O2** 3-seed: **$36.32\pm0.40$** (vs dualBeat $35.81$; legacy p2mmd05 $35.48$).
+System lock GSM N16 **O2** 3-seed: **$36.32\pm0.40$** (vs dualBeat $35.81$; legacy p2mmd05 $35.48$). Canonical tables: `paper_tables_mmd_cold/`.
 
 **Transfer.** CODI frozen $40.94$ $\rightarrow$ CODIp2 $42.00$ (**$+1.06$**, same pool, O2 Top-1; not re-run after the lock swap).
 
