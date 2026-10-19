@@ -2555,6 +2555,30 @@ Hold：不盲 λ_MMD；不把崩塌写成 CoLaR 生成能力差。
 Do not：上 SLPO 冒充第三底座；盲 λ_MMD；未过探针宣称修好。
 
 
+### 顺序负样本消融（2026-10-17 21:50）
+
+**问题：** 基线顺序感知弱、Top-1 却常接近 → 顺序负样本是否无意义？
+
+**已有证据（见 `ORDER_NEG_ABLATION.md`）：** 否。O1（仅 flat order 负样本）pair↑ 但 BoN≈B1；O2（负样本+hierarchy）同池相对 B1/O1 **+2.9 / +4.0** pp。→ **无负样本 / 仅负样本 / 负样本+层级** 三联才有答案；不能从「Top-1 打平」否定整包。
+
+**本轮：** ckpt 已失 → 重训 B1+O1；补 corruption leave-one-out（`adj_only` / `no_adjacent` yaml 已写）。训完同池配对复验。
+
+### CoLaR 维 LatentRM（B0→O2）启动（2026-10-17 21:00）
+
+**目标：** 真验证 **p2+O2**（此前只有 answer_beat，无 O2）。
+
+**协议：** fixed_t T=16；LatentRM = Llama-3.2-1B 骨干（`checkpoints/colar_latentrm_init`，d=2048 Identity）；不用 GPT-2 O2。
+
+**流水线：**
+1. annotate `latent-data/colar_fixed_t/{train,valid}`（`scripts/annotate_colar_fixed_t.sh`）
+2. 训 B0：`training_args/train_colar_latentrm_b0.yaml`
+3. 训 O2：`training_args/train_colar_latentrm_o2.yaml`
+4. 同池 BoN：`src/infer_colar_rm.py` × {冻结 CoLaR, Colar-p2v2} × {B0, O2}
+
+**Do not：** 把 GPT-2 O2 零样本塞进 CoLaR；未过 B0 valid 就宣称 O2 成功；磁盘满时盲目全量 annotate。
+
+**状态：** init ckpt ✅；smoke annotate ✅；valid+train annotate 进行中（disk 紧，train 先 2% GSM）。
+
 ### Colar-p2v2 结果（2026-10-17；GitHub 同步）
 
 同协议 fixed_t（无 `###`，T=16，noise，无 MCLinear）：
@@ -2702,3 +2726,206 @@ Do not：上 SLPO 冒充第三底座；盲 λ_MMD；未过探针宣称修好。
 - 诊断报告：`tables/o2_input_mode/`、`tables/scorer_axis_5seed/auc_to_top1/`、`o2_advantage_slices/`；全量摘要镜像 `tables/experiment_reports/`（无多 MB 逐题 dump）
 - 代码：`scripts/o2_*.py` 等分析/训练脚本；`src/infer_gpt2_rm.py`（`prm_input_mode`）；补齐 `training_args/*`
 - **未入库：** 权重、checkpoints、逐题 BoN JSON dump（体积大；本地 `LatentTTS-main/results/full/` 保留）
+
+### 论文模块一消融补全（2026-10-17 21:55）
+
+**定位：** 主文模块一 = B1 / O1 / O2 + corruption leave-one-out；模块二 MMD 用已有 dualBeat vs p2mmd05，不新开盲抬 λ。
+
+**清单：** `results/full/PAPER_ABLATIONS.md`（结果表 + 读法纪律）。
+
+**执行：**
+1. A1–A3 历史数字已齐（`ORDER_NEG_ABLATION.md` / `bon_paired_gsm16_20260929_155950`）→ 主表先用；ckpt 缺失故重训复验。
+2. 重训配方：单 eval `valid-64`（避免多 eval 集 EarlyStopping 误报）、`greater_is_better=true`、8ep / patience 8。日志 `logs/train_b1_*` / `train_o1_*`；GPU 0–1 / 2–3。
+3. Watcher `scripts/watch_module1_ablation.sh`：B1+O1 `best` → 并行 A4 adj_only + A5 no_adjacent → `scripts/run_module1_ablation_eval.sh`（eval_order + 同池 BoN）。
+4. 模块二表：dualBeat λ=0 top1 35.41 / wvote 36.69；p2mmd05 λ=0.05 top1 34.80 / wvote 36.77 — **不宣称 MMD 已涨点**。
+
+**Do not：** 盲 λ_MMD↑；把 O1 高 pair 写成 BoN 成功；用 A1 vs O1 主张「负样本有用」（应用 A1 vs A3）。
+
+### 叙事纠偏：诊断优先，闭环降级（2026-10-17 23:20）
+
+**用户定论：** 现稿主次反了——用方法论文体例卖诊断发现；证据最强是探索（p2）与「B0 异类 / realization gap」，最弱是「O2 gate 闭环耦合」。
+
+**Claim 强度（勿倒挂写作）：**
+1. **强 — 探索：** p2 +1.44 Top-1 / +3.21 Cov；同预算 RL ≈0。
+2. **中强 — 变现：** O2 同池 > B0（+1.0 / +1.5，5-seed CI 不含 0）；效应小。
+3. **弱/阴性 — 耦合：** gate 消融 +0.36±0.66，方向混杂 → **不把 co-design/闭环写进标题与摘要主 claim**。
+
+**真正主角发现：** p2 后 trajectory-level scorers（O2/SWIFT/HSRM）realization rate（Top1/Cov）约 66–67% 可兑现；**官方 step-wise contrastive B0 ≈64% 不涨** → B0 是异类。O2 vs SWIFT 打平 = 故事一部分（分界线是 step-wise vs trajectory-level，不是有无 order-pref）。
+
+**一句话主线：** Post-training expands the latent candidate pool, but official step-wise LatentRM fails to realize new correct trajectories; trajectory-level scoring recovers the gain; order-aware O2 additionally preserves ranking/order sensitivity.
+
+**三幕：** (1) 现象：p2↑Cov 但 B0 realization 不涨；(2) 机制：漂移下 step-wise 校准 / 新增正解上 B0 排名；(3) 解法与边界：O2=trajectory+order 的一例；gate 非经验必需；增益主要来自生成器更新 + 测试时 scorer。
+
+**写作纪律：**
+- Abstract **phenomenon-first**（先 gap，再解药）；B0 当反派。
+- Module II/III → design space / future work；贡献只留已验证 Module I + p2。
+- 分开写：「分布漂移 → 需 trajectory-level/robust scorer」vs「同一 scorer 作 gate 有额外收益」（后者证据不足）。
+- 标题倾向：*Exploration–Realization Gap* / *Post-Training Outruns Its RM*；可保留 From Exploration to Realization + 副标题强调 gap。
+- 不硬讲闭环；可写「闭环是架构选择，不是经验必需」。
+
+**补实验优先级（按此排期，不另开方法）：**
+- **P0：** B1 **5-seed 同池**主表（拆 CE/BCE × step/traj × order；命门）；conversion-rate 表；**p2-expanded 子集**上 B0 vs O2 变现（候选 ID 对齐；缺则重跑带 ID dump）。
+- **P0/P1：** p2 组件消融（gate / SF-C / MMD）同一 full recipe；B0 gate vs O2 gate vs no gate @1500 步。
+- **P1：** B0 失效机制（per-step calibration / entropy / 与正确性相关）；自然 order-corruption rescue。
+- **P2：** MATH/SVAMP/ASDiv；更大骨干；2–3 训练 replicate。
+
+**与在跑消融的关系：** 当前 B1/O1 重训 + corruption LOO 服务 Module I / order-pref 控制；**B1 出 best 后优先做 5-seed 同池 BoN（相对单 seed 配对升级）**，再排 conversion-rate / expanded 对齐。不因叙事纠偏停掉 B1。
+
+### 模块一消融复验结果（2026-10-18 13:15）
+
+**目录：** `results/full/module1_ablation_20261018_063957/`（B1/O1/O2/adj/noadj；同池 sha 对齐）。
+
+**机制：** B1 pair 0.77 / hier 0.73；O1 0.97 / 0.75；O2 0.97 / **0.90**；adj 0.97 / **0.68**；noadj 0.94 / 0.88。→ hierarchy 需多等级负样本或显式 hier 项；仅 adjacent 不够。
+
+**BoN（Top1 / wvote）：** B1 33.36/34.27；O1 32.52/33.66；O2 33.28/34.95；adj 32.90/34.34；noadj 34.12/35.10。  
+配对 Top1：O2−B1 **−0.08** CI 含 0；O2−O1 +0.76 含 0。wvote：O2−O1 **+1.29** 不含 0；O2−B1 +0.68 含 0。
+
+**相对历史：** 历史 O2−B1 Top1 +2.88 **未复现**（注意：当前默认 sum_logit+wvote 字段；历史 accuracy=Top1）。  
+**写作：** 机制消融可写；**勿再主打「order-pref → BoN Top1」**；与叙事纠偏一致（traj-level / B0 异类为主角；order 为辨序边界）。下一步仍优先 **B1 5-seed**（叙事 P0），不是再加 λ。
+
+### 全论文消融排期（诊断优先）（2026-10-18 13:25）
+
+**原则：** 每条消融服务可写 claim；闭环不追阳性；Module II/III 不进主贡献。
+
+**已出（D1）：** `results/full/paper_ablation/realization_rate_*.tsv` + `REALIZATION_RATE_REPORT.md`  
+- frozen→p2：B0 realization **64.65→64.07（−0.58）**；O2/SWIFT/HSRM 维持 ~66.6–67.1。  
+- → **B0 异类**成立；分界=step-wise vs traj-level。
+
+**在跑（D2）：** `scripts/run_b1_5seed_bon.sh` → `scorer_axis_5seed/{frozen,p2}_B1_N16_s{42..46}.json`（`claim_agg=top1`，与轴对齐）。完后重算 realization 表。
+
+**已有（D3/D4/D5/D6）：** Module I 复验；输入模态；gate 阴性；dualBeat vs p2mmd05。
+
+**下一步：** D2 落盘 → 更新主结论；再排 D7（p2-expanded ID 对齐）。不新开盲 λ_MMD / 不重吹闭环。
+
+### 方法消融开跑（拆自家配方）（2026-10-18 13:50）
+
+**纠正：** 主消融 = 去掉我们 p2/O2 的一块，不是跨 SWIFT 诊断。
+
+**矩阵：** dualBeat✅ 35.41 | p2mmd05✅ 34.80 | Module I✅ | nogate🔄 | sfB🔄  
+脚本 `run_method_ablation_p2.sh`；目录 `results/full/method_ablation/`。
+
+### 方法消融结果（2026-10-18 15:35）
+
+`results/full/method_ablation/` 齐。冻结 O2 BoN N16 s42 Top1：
+
+| 臂 | Top1 | Δ vs dualBeat |
+|----|-----:|-------------:|
+| dualBeat | 35.41 | — |
+| p2mmd05 | 34.80 | −0.61 |
+| sfB | 34.42 | −0.99 |
+| nogate | 31.77 | **−3.64** |
+
+**结论：** 去掉门控掉点最大；SF-C 有中等贡献；MMD 未涨。门控在方法消融尺上**不是阴性**（与短预算 O2-vs-SWIFT gate 消融不同轴，勿混）。
+
+### 方法消融 v2 四缺口（2026-10-18 16:15）
+
+按用户点名补：
+1. **门控内拆**：`o2only`（b0_slack=1e9）/ `b0only`（o2_id=B0）/ dualBeat / nogate；同预算 1500 from coconut。
+2. **多种子**：BoN seeds 42/43/44 评现有+新 ckpt（`bon_multiseed/`）；训练种子暂锁 42（全量重训多种子成本高）。
+3. **MMD 协议对齐**：`mmd_cold` = coconut 起 + λ=0.05（leave-one-out）；`p2mmd05` 暖启仅作对照。
+4. **生成器尺**：`eval_sf_generator` Pass@1 / Cov@16 + mid leftover。
+
+脚本：`scripts/run_method_ablation_v2.sh` → `results/full/method_ablation/`；汇总 `summarize_method_ablation_v2.py`。
+
+### 系统配方选择：mmd_cold vs p2mmd05（2026-10-18 23:25）
+
+**同协议 3-seed O2 Top1（method_ablation/bon_multiseed）：**  
+dualBeat 35.81±0.46 | **mmd_cold 36.32±0.40（+0.51）** | p2mmd05 35.48±0.65（−0.33 vs dualBeat）。
+
+**决策：**
+1. **谈 MMD / 消融主表：用 mmd_cold vs dualBeat**（同冷启、同预算 leave-one-out）。p2mmd05 降为「暖启对照」，不再当 MMD 成功证据。
+2. **主系统锁：优先 dualBeat 或 mmd_cold，二选一写死；不要继续锁 p2mmd05。**  
+   - 若主文要「带弱 MMD 的最终系统」→ **升 mmd_cold**（`outputs/methodabl_mmd_cold_20261018_161230/model`），并补 Hard/MA 等外集矩阵（旧 p2 矩阵不可直接继承）。  
+   - 若主文强调「门控+SF 已够、MMD 可选」→ **锁 dualBeat**，mmd_cold 只进消融（+0.5pp 弱正）。
+3. **不**因 +0.5pp 盲抬 λ_MMD；不把 p2mmd05 暖启失败写成 MMD 无效（协议不同）。
+
+**默认建议（务实）：** 方法消融与 Module II 叙述用 mmd_cold；主系统暂锁 **dualBeat**（证据链最全），摘要写 MMD 冷启弱正、暖启非必需——除非愿付外集重评成本再升 mmd_cold。
+
+### 主系统改锁 mmd_cold + 全矩阵重评（2026-10-18 23:30）
+
+**锁：** `outputs/p123_mmd_cold/model` ← `methodabl_mmd_cold_20261018_161230`  
+**替代：** 不再以 p2mmd05 为官方主系统。  
+**评测：** `scripts/eval_mmd_cold_lock.sh` → `results/full/p123/paper_mmd_cold/`  
+协议：dropout=None、claim_agg=top1；O2+B0 × gsm/hard/ma × N=1/4/16/64；GSM N16 多种子；生成器 Pass@1/Cov。  
+不怕多测；齐后以 `LOCK_SUMMARY_*.md` 更新叙事数字。
+
+### 正式改锁 mmd_cold（矩阵已齐）（2026-10-19 00:45）
+
+**官方主系统：** `outputs/p123_mmd_cold/model` + 冻结 O2；协议 dropout=None / top1。  
+**全矩阵：** `results/full/p123/paper_mmd_cold/` + `LOCK.md` / `LOCK_SUMMARY_20261018_232923.md`。
+
+| 尺 | 数字 |
+|----|------|
+| GSM N16 O2 3-seed | **36.32±0.40**（vs dualBeat 35.81 / 旧 p2mmd05 35.48） |
+| GSM N16 O2 s42 | 36.01；B0 35.18；N1 det 36.39 |
+| Hard / MA O2 N16 | 8.19 / **86.38** |
+| GSM N16 B0 3-seed | 35.03（vs 冻 A≈32.9 → 生成器侧仍正） |
+
+**写作：** G-Ours = mmd_cold；p2mmd05 降级暖启对照；dualBeat = 无 MMD 消融基线。CLOSED_LOOP §4.1–4.2 已改。  
+**Do not：** 再把 p2mmd05 写成官方锁；盲抬 λ_MMD。
+
+### 主表+消融重建（mmd_cold 中心）（2026-10-19 01:00）
+
+**权威目录：** `results/full/paper_tables_mmd_cold/`（`MAIN_TABLES.md` / `ABLATION_TABLES.md` / `main_matrix.tsv`）。
+
+**在跑：** `scripts/eval_dualbeat_dnone_fair.sh` → dualBeat **B0** 全外集 dnone（补主表 B0 列公平对照）；O2 外集复用 fiveway。完后重跑 `build_paper_tables_mmd_cold.py` 并推 GitHub pack。
+
+**消融读法锁定：** Full=mmd_cold；−MMD=dualBeat（+0.51 弱正）；nogate −4.2pp；p2mmd05 暖启降级。
+
+**已改：** PAPER_ABLATIONS / METHOD_ABLATION / ABLATION_MASTER / EXPERIMENTS（pack）指向新表。
+
+### dualBeat dnone 公平矩阵齐 + 主表定稿（2026-10-19 01:30）
+
+**补测完成：** `results/full/p123/paper_dualbeat_dnone/`（B0 全外集 + O2 GSM N64；Hard/MA O2 链 fiveway）。`missing_cells=0`。
+
+**主表定稿：** `paper_tables_mmd_cold/MAIN_TABLES.md` / `ABLATION_TABLES.md`。
+
+| 尺（GSM N16） | mmd_cold | dualBeat | Frozen |
+|---------------|---------:|---------:|-------:|
+| O2 3-seed | **36.32±0.40** | 35.81±0.46 | 32.07 (s42) |
+| B0 3-seed | **35.03±0.20** | 34.12±0.55 | 32.88† |
+
+† Frozen B0 3-seed 为短预算对照历史。B0 尺上 mmd_cold 相对 dualBeat 约 **+0.9pp**（与 O2 尺 +0.5 同向）。
+
+**下一步：** 推 GitHub pack（主表+消融+叙事+dualBeat dumps 摘要，不强制推全量 JSON）。
+
+### 纠正：主线必须按最终策略 mmd_cold 全量重跑（2026-10-19 15:40）
+
+用户纠正：换最终策略后，**不能**沿用旧 p2mmd05 / 旧 CODIp2 / 旧 p2 池数字当主线。凡「底座 + p2」与「主实验 3 候选池」一律按 **mmd_cold 配方**重测。
+
+**重跑清单（本轮开跑）：**
+
+| ID | 内容 | 动作 |
+|----|------|------|
+| M2-A | COCONUT + mmd_cold 系统矩阵 | ✅ 已有 `paper_mmd_cold/` |
+| M2-B | **CODI + mmd_cold** 重训 + O2/B0 评 | 🔄 `scripts/train_codi_mmd_cold.sh` |
+| M2-C | **CoLaR fixed_t + λ_MMD=0.05**（answer_beat+SF-C）重训 + Greedy/Cov | 🔄 `scripts/train_colar_mmd_cold.sh` |
+| M3 | **mmd_cold 候选池** 5-seed × B0/O2/SWIFT/HSRM | 🔄 `scripts/eval_scorer_axis_mmd_cold.sh` |
+| M1 | 冻/SLPO/GRPO vs mmd_cold（B0） | ✅ 已齐；非 p2 底座不重训 |
+| 消融 | method leave-one-out | ✅ 已齐（配方轴） |
+
+**Do not：** 主表再写 CODIp2=旧 42.00 / scorer 池=`p2mmd05` 当「Ours」。  
+**Hold 不变：** G1 SFT/G2 RFT、Chamfer 烘培（非本轮「换锁重测」范围，除非用户另点）。
+
+### 主实验 3 同池修复：generate-once multi-scorer（2026-10-19 17:05）
+
+**根因：** 分次 `infer_gpt2_rm` 即使同 seed 也不保证同池（CUDA 非确定 + 曾把 O2 链到另一次 methodabl dump）。旧 p2 池碰巧对齐；`scorer_axis_mmd_cold/` 的 O2 vs 其余 mism≈1049 → **作废，不当主表**。
+
+**办法：** `scripts/infer_same_pool_multi_scorer.py` — 一次 generate，同 batch 内用 B0/O2/SWIFT/HSRM 打分，写 `scorer_axis_mmd_cold_samepool/`，断言 `answers_sha1` mism=0。
+
+**在跑：** `run_scorer_axis_mmd_cold_samepool.sh` GPU3，seeds 42–46。齐后替换 CLOSED_LOOP §4.3 / MAIN 主实验 3。
+
+### 主线重跑齐套 + 文档刷新（2026-10-19 19:55）
+
+| ID | 结果 | 读法 |
+|----|------|------|
+| M2-B CODImmd | O2 41.32 / B0 40.11（vs 冻 O2 40.94 → **+0.38**） | 正但弱于旧 CODIp2；非 hash 同池 |
+| M2-C colar_mmd_cold | Greedy/Cov16/Maj **36.62 / 48.45 / 37.07** | fixed_t 内正 Δ；勿混官方 `###` |
+| M3 samepool | B0 34.95±0.26 · O2 **36.38±0.60** · SWIFT 36.16±0.37 · HSRM 36.32±0.63；O2−B0 ≈ **+1.43**；mism=0 | 正式主实验 3 |
+
+**文档已刷新：** `CLOSED_LOOP_STORY.md`、`paper_tables_mmd_cold/MAIN_TABLES.md`、`PAPER_NARRATIVE{,_en}.md`、`EXPERIMENTS.md`；锁摘要 `paper_codi_mmd_cold/LOCK.md`、`colar_mmd_cold/LOCK.md`、`scorer_axis_mmd_cold_samepool/LOCK.md`。
+
+**Do not：** 主表写 CODIp2=42.00 / 历史 p2 池 / 无效 `scorer_axis_mmd_cold/`。  
+**Hold：** G1 SFT / G2 RFT、Chamfer bake-off、全预算 SLPO/GRPO。  
+**Next：** 推 GitHub pack（meta/TSV/叙事，不推全量 dump）。
+

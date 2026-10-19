@@ -195,11 +195,11 @@ Experiments follow the staging rule: Module I (O2) is the main scorer result; Mo
 | Pool | B0 | O2 | SWIFT | HSRM |
 |------|---:|---:|------:|-----:|
 | Frozen | $32.72\pm0.96$ | $\mathbf{33.72\pm1.03}$ | $33.69\pm0.75$ | $33.60\pm0.75$ |
-| p2 | $34.44\pm0.38$ | $35.92\pm0.28$ | $35.88\pm0.48$ | $\mathbf{36.06\pm0.37}$ |
+| **mmd_cold** (generate-once same pool) | $34.95\pm0.26$ | $\mathbf{36.38\pm0.60}$ | $36.16\pm0.37$ | $36.32\pm0.63$ |
 
-Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); **$+1.49$** [$0.59,2.38$] (p2). O2 vs SWIFT/HSRM Top-1 CIs cross zero.
+Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); mmd_cold pool mean **$\approx{+}1.43$** (5-seed, sha-aligned). O2 vs SWIFT/HSRM Top-1 remains near-tied.
 
-**Order and ranking.** Full O2 exceeds SWIFT in $\mathrm{auc}_{cw}$ by $\sim$+$3.3$ / $+2.8$ pp (frozen / p2). Order-Decision and hierarchy metrics place O2 far above outcome-only SWIFT/HSRM. Rescue asymmetry favors O2 over B0 on p2 pools; vs SWIFT/HSRM rescues are roughly symmetric. Capacity of O2 vs tiny SWIFT/HSRM heads is not matched—Top-1 ties are not architecture verdicts.
+**Order and ranking.** Full O2 exceeds SWIFT in $\mathrm{auc}_{cw}$ by $\sim$+$3.3$ / $+2.8$ pp (frozen / legacy p2 pool). Order-Decision and hierarchy metrics place O2 far above outcome-only SWIFT/HSRM. Capacity of O2 vs tiny SWIFT/HSRM heads is not matched—Top-1 ties are not architecture verdicts.
 
 **Input probe.** Latent-only O2 keeps Top-1 near full O2/SWIFT but drops $\mathrm{auc}_{cw}$ onto the SWIFT band. We read this as: keep hierarchical preference, improve how text and latents jointly feed $s_\phi$, and calibrate selection—not discard Module I.
 
@@ -217,13 +217,13 @@ Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); **$+1.49$** [$0.59,2.38$] (p
 
 System lock GSM N16 **O2** 3-seed: **$36.32\pm0.40$** (vs dualBeat $35.81$; legacy p2mmd05 $35.48$). Canonical tables: `paper_tables_mmd_cold/`.
 
-**Transfer.** CODI frozen $40.94$ $\rightarrow$ CODIp2 $42.00$ (**$+1.06$**, same pool, O2 Top-1; not re-run after the lock swap).
+**Transfer.** CODI frozen $40.94$ $\rightarrow$ **CODImmd** $41.32$ (**$+0.38$**, matched protocol s42, not hash-identical pools). CoLaR fixed_t: frozen Greedy/Cov16/Maj $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$.
 
-Matched short-budget RL does not beat frozen; mmd_cold / p2 does. This is not a full-budget official RL claim ($\sim 4$–$5\times 10^4$ steps).
+Matched short-budget RL does not beat frozen; mmd_cold does. This is not a full-budget official RL claim ($\sim 4$–$5\times 10^4$ steps).
 
 ### 5.3 Modules II–III status
 
-Content-view MMD inside **mmd_cold** is the exercised set-alignment path and is slightly ahead of no-MMD dualBeat; warm-start p2mmd05 is not the success story. A clean Chamfer-vs-MMD bake-off and backprop-through-rollout curriculum remain staged follow-ups (Appendix). Incomplete non-GPT-2 ports and missing SFT/RFT controls are likewise deferred with explicit non-claims.
+Content-view MMD inside **mmd_cold** is the exercised set-alignment path and is slightly ahead of no-MMD dualBeat; warm-start p2mmd05 / legacy CODIp2 are demoted controls. A clean Chamfer-vs-MMD bake-off and SFT/RFT controls remain staged follow-ups (Appendix).
 
 ---
 

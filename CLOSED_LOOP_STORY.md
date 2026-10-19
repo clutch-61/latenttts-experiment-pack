@@ -1,4 +1,5 @@
-> 论文叙事稿（匿名会议体例）：[`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md)。本文件为 Experiments 数字骨架。
+> 论文叙事稿（匿名会议体例）：[`PAPER_NARRATIVE.md`](PAPER_NARRATIVE.md)。本文件为 Experiments 数字骨架。  
+> **权威主表 / 消融（mmd_cold 锁）：** [`paper_tables_mmd_cold/MAIN_TABLES.md`](paper_tables_mmd_cold/MAIN_TABLES.md) · [`ABLATION_TABLES.md`](paper_tables_mmd_cold/ABLATION_TABLES.md) · 锁 [`p123/paper_mmd_cold/LOCK.md`](p123/paper_mmd_cold/LOCK.md)。
 
 # Experiments（主文草稿）
 
@@ -10,54 +11,57 @@
 
 ## 4.1 生成器后训练策略（固定 COCONUT）
 
-**Setup.** 起点固定为官方 COCONUT-GPT2（124M）。对照：冻结（G0）；同起点、同优化步数 3000 的 SLPO/RLOO（G3）与 Dropout-GRPO（G4）；本文 p2mmd05（G-Ours）。评测打分统一用 **B0**（故意不接 O2，避免把 scorer 增益算进生成器）。指标：Coverage@$N$、B0 Top-1。
+**Setup.** 起点固定为官方 COCONUT-GPT2（124M）。对照：冻结（G0）；同起点、同优化步数 3000 的 SLPO/RLOO（G3）与 Dropout-GRPO（G4）；本文 **mmd_cold**（G-Ours：冷启 dual_beat+SF-C+λ_MMD=0.05，1500 step；锁 `outputs/p123_mmd_cold`）。评测打分统一用 **B0**（故意不接 O2，避免把 scorer 增益算进生成器）。指标：Coverage@$N$、B0 Top-1。
 
-**Result.** GSM8K-Test，$N{=}16$，3-seed 均值：
+**Result.** GSM8K-Test，$N{=}16$，3-seed 均值（dropout=None）：
 
 | Method | Cov@16 | B0 Top-1 | Δ Top-1 vs G0 |
 |--------|-------:|---------:|--------------:|
 | G0 Frozen | 50.67 | 32.88 | — |
 | G3 SLPO (3000) | 50.90 | 32.88 | +0.00 |
 | G4 Dropout-GRPO (3000) | 51.23 | 32.85 | −0.03 |
-| G-Ours p2mmd05 | **53.88** | **34.32** | **+1.44** |
+| dualBeat (−MMD） | 53.60 | 34.12±0.55 | +1.24 |
+| G-Ours **mmd_cold** | **54.03** | **35.03±0.20** | **+2.15** |
 
-逐 seed B0 Top-1：G0 31.69/33.74/33.21；G3 32.07/33.28/33.28；G4 31.92/33.28/33.36；Ours 34.04/34.72/34.19。G3/G4 训练曲线上 `eval_reward` 停滞在 0.352–0.356。
+逐 seed B0 Top-1（mmd_cold）：35.18 / 35.10 / 34.80；dualBeat：33.66 / 34.72 / 33.97。旧暖启 p2mmd05 已降级。全矩阵见 `paper_tables_mmd_cold/MAIN_TABLES.md`。G3/G4 训练曲线上 `eval_reward` 停滞在 0.352–0.356。
 
-**Takeaway.** 在相同骨干与相同 3000-step 预算下，p2 提高 Cov 与 B0 Top-1；短预算 RL 对照未超过冻结。该结论**不等于**优于官方 SLPO/GRPO 全预算（其步数约 $4{\times}10^4$–$5{\times}10^4$，且每步 `num_generations` 小于本设定的 $k$）。
+**Takeaway.** 在相同骨干下，p2（mmd_cold）提高 Cov 与 B0 Top-1；短预算 RL 对照未超过冻结。该结论**不等于**优于官方 SLPO/GRPO 全预算（其步数约 $4{\times}10^4$–$5{\times}10^4$，且每步 `num_generations` 小于本设定的 $k$）。
 
 ---
 
-## 4.2 后训练跨底座迁移（COCONUT / CODI）
+## 4.2 后训练跨底座迁移（COCONUT / CODI / CoLaR）
 
-**Setup.** 在 COCONUT 与 CODI 上分别做「冻结 → +p2」底座内对照；评测接 O2；禁止用跨底座绝对分差解释策略收益。CODI 上的 B0/O2 为 COCONUT 表征上训练权重的零样本迁移（须在文中标明）。
+**Setup.** 各底座内「冻结 → +最终配方」对照；评测接 O2（GPT-2 底座）或 Greedy/Cov/Maj（CoLaR）。禁止用跨底座绝对分差解释策略收益。CODI 上的 B0/O2 为 COCONUT 表征上训练权重的零样本迁移（须标明）。
 
-**Result.** GSM8K-Test，$N{=}16$，O2 Top-1：
+**Result.** GSM8K-Test，$N{=}16$（除非另注）：
 
-| Base | Policy | O2 Top-1 | Δ (within base) |
-|------|--------|---------:|----------------:|
-| COCONUT | Frozen | 32.07 | — |
-| COCONUT | p2mmd05 | 34.80 | +2.73† |
-| CODI | Frozen | 40.94 | — |
-| CODI | CODIp2 | 42.00 | **+1.06**（同池） |
+| Base | Policy | 主指标 | Δ (within base) |
+|------|--------|-------:|----------------:|
+| COCONUT | Frozen | O2 Top1 32.07 | — |
+| COCONUT | **mmd_cold** | O2 **36.01**（3-seed **36.32±0.40**） | **+3.94**（s42；3-seed vs 冻≈+2.6） |
+| CODI | Frozen | O2 40.94 | — |
+| CODI | **CODImmd**（同最终配方） | O2 **41.32** | **+0.38**† |
+| CoLaR fixed_t | Frozen | Greedy 22.44 / Cov@16 35.48 / Maj 23.73 | — |
+| CoLaR fixed_t | **colar_mmd_cold**（answer_beat+SF-C+λ_MMD=0.05） | Greedy **36.62** / Cov@16 **48.45** / Maj **37.07** | **+14.2 / +13.0 / +13.3** |
 
-†COCONUT 冻/p2 候选池 Cov/Maj 不完全对齐（新协议约 51.02/33.74 vs 52.99/36.32），故标「同协议、seed 对齐，非逐条同池」。CODI 侧 Cov/Maj 对齐。
+†相对冻 CODI 同协议 s42；cov 53.37 vs 冻 54.66，**非逐条同池**（方向正、幅度小于旧暖启 CODIp2 的 +1.06）。旧 CODIp2=42.00 降为历史对照。COCONUT/CODI 锁：`paper_mmd_cold/`、`paper_codi_mmd_cold/`；CoLaR：`results/full/colar_mmd_cold/`。
 
-**Takeaway.** 在更强的 CODI 冻结点上，p2 仍给出正的同池 Top-1 增量，说明增益不是仅来自弱 COCONUT 的过拟合空间。
+**Takeaway.** 最终配方在 COCONUT 上增益最大；在更强 CODI 上仍为正但幅度变小；在非 GPT-2 的 CoLaR fixed_t 上底座内大幅正 Δ（相对 fixed_t 冻，不可与官方 `###` 协议混表）。
 
 ---
 
 ## 4.3 潜轨迹打分器（固定候选池）
 
-**Setup.** 在固定 dump 上比较 Maj、B0、O2、SWIFT-Latent、HSRM-Latent；禁止不同 scorer 吃不同采样池。种子 $42$–$46$（5-seed）。主指标 Top-1；辅助：对错排序 `auc_cw`、顺序机制 `order_pair_acc` / `hierarchy_consistency`，以及内容固定、仅置换顺序的 Order-Decision 诊断。
+**Setup.** **generate-once** 同池：一次采样后用 B0/O2/SWIFT/HSRM 打分（`scorer_axis_mmd_cold_samepool/`，`answers_sha1` mism=0）。种子 $42$–$46$。主指标 Top-1。
 
 **Result A — 同池 Top-1（GSM，$N{=}16$，均值±std）。**
 
 | Pool | B0 | O2 | SWIFT | HSRM |
 |------|---:|---:|------:|-----:|
 | Frozen COCONUT | 32.72±0.96 | **33.72±1.03** | 33.69±0.75 | 33.60±0.75 |
-| p2mmd05 | 34.44±0.38 | 35.92±0.28 | 35.88±0.48 | **36.06±0.37** |
+| **mmd_cold**（正式同池） | 34.95±0.26 | **36.38±0.60** | 36.16±0.37 | 36.32±0.63 |
 
-配对 O2−B0：冻池 **+1.00pp** $[0.17,1.85]$；p2 池 **+1.49pp** $[0.59,2.38]$（均显著）。O2 vs SWIFT/HSRM 的 Top-1 配对 CI 跨 0。
+配对 O2−B0：冻池 **+1.00pp** $[0.17,1.85]$（历史 5-seed）；**mmd_cold 池 mean Δ ≈ +1.43pp**（5-seed；同池已断言）。O2 vs SWIFT/HSRM Top-1 仍接近（平手区）。
 
 **Result B — 机制与诊断。** Valid 上 order_pair_acc / hierarchy：O2 0.972 / 0.894；B0 0.860 / 0.769；SWIFT 0.449 / 0.242；HSRM 0.475 / 0.441。`auc_cw` 上 O2 相对 SWIFT/HSRM 显著或边缘显著（见 `tables/paired_ranking_*`）。Order-Decision：O2 `strict_win@N16` 在 adjacent/segment/full_reverse 上均高；同骨干下 O2 相对 B0 的 adjacent `pair_acc` 增量约 +0.20（CI 不含 0）。SWIFT/HSRM 的顺序盲与置换不变聚合一致。
 
@@ -71,33 +75,32 @@
 
 将 4.1–4.3 合读（而非并列罗列）：
 
-1. **生成器侧**：p2 在固定骨干、短预算对照下提高 Cov 与（B0 尺）Top-1；在 CODI 上仍有同池正 Δ。  
-2. **打分器侧**：同池 O2−B0 为正；续训后 gap 增大。  
-3. **接口**：p2 训练门控使用 O2（+B0 健康约束），因此 scorer 进入生成器更新，而不仅用于测试。
+1. **生成器侧**：mmd_cold 在 COCONUT 上抬 Cov/B0 Top1；CODI 上弱正（+0.38）；CoLaR fixed_t 上底座内大幅正 Δ。  
+2. **打分器侧**：正式 mmd_cold 同池上 O2−B0 ≈ +1.43pp；O2≈SWIFT/HSRM（Top1）。  
+3. **接口**：训练门控使用 O2（+B0 健康约束）；消融显示整门控贡献最大（nogate −4.2pp vs Full）。
 
-据此，主文可陈述：潜 TTS 的后训练与轨迹打分应在同一潜表示上联合设计；仅优化其一会低估可实现增益。不陈述的内容见下。
+据此，主文可陈述：潜 TTS 的后训练与轨迹打分应在同一潜表示上联合设计；仅优化其一会低估可实现增益。**不**把「闭环节拍协同」写成最强 claim（见 PLAN diagnosis-first）。不陈述的内容见下。
 
 ---
 
 ## 限制（Experiments 内显式写出）
 
-- CoLaR（Llama+LatentHead）可作为非 GPT-2 冻结参照；当前 p2 移植未稳定，**不纳入跨架构正结果**。  
+- CoLaR 正结果仅在 **fixed_t 自洽协议**下相对该协议冻结；不可与官方 `###`+max_L 绝对分混表。  
 - 4.1 的 RL 对照为同 3000-step 设定，非官方全预算复现。  
-- COCONUT 冻/p2 的部分 O2 对比非逐条同池，写作须标注。  
+- CODI 冻→CODImmd 为同协议 s42、**非逐条同池**；幅度小于历史 CODIp2。  
 - 不得用跨底座绝对 Acc 差论证策略收益；不得写「O2 Top-1 全面优于 SWIFT/HSRM」。
 
 
 ---
 
-## 实验补全审计（2026-10-17）
+## 实验补全审计（2026-10-19 改锁后）
 
 | 板块 | 主 claim 是否够写 | 状态 |
 |------|:--:|------|
-| 4.1 生成器策略（COCONUT，短预算 RL 对照） | ✅ | 3-seed B0 矩阵齐；G1 SFT / G2 RFT **缺** |
-| 4.2 跨底座（CODI） | ✅ | 同池 +1.06；COCONUT 冻/p2 部分非逐条同池（已标） |
-| 4.3 打分器同池 + 机制 + Order-Decision | ✅ | 5-seed 齐；BCE ckpt 缺（数字已有） |
-| 协同读法（p2 门控用 O2） | ✅ | 有；组件消融（去 MMD / 去 order-pref 等）**弱** |
-| CoLaR 第三架构 p2 | ❌ | 冻结可参；p2 未稳定，不进正结果 |
-| 全预算 SLPO/GRPO、冻 CODI×四 scorer | ❌ | 附录/扩展，非主闭环阻塞项 |
+| 4.1 生成器策略（COCONUT） | ✅ | mmd_cold 3-seed B0 齐；G1 SFT / G2 RFT **缺** |
+| 4.2 跨底座 | ✅ | CODI **CODImmd +0.38**；CoLaR fixed_t **mmd_cold 正 Δ** |
+| 4.3 打分器同池 | ✅ | `scorer_axis_mmd_cold_samepool/` mism=0；5-seed |
+| 方法消融 | ✅ | Full=mmd_cold；nogate −4.2；−MMD −0.51 |
+| 全预算 SLPO/GRPO、SFT/RFT | ❌ | 非本轮阻塞项 |
 
-**结论：** 生成器×打分器主闭环对主文 **已基本补全**；未补全的是经典 SFT/RFT 对照、部分消融、CoLaR 正结果与全预算 RL——不挡闭环故事，但挡「生成器轴方法大满贯」表述。
+**结论：** 最终策略 **mmd_cold** 下的三主实验测量已齐；文档以本文件 + `paper_tables_mmd_cold/` 为准。

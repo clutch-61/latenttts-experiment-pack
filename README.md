@@ -2,7 +2,7 @@
 
 大模型解数学题时，通常先写文字推理再给答案。COCONUT 把中间推理改成模型内部的连续向量（潜变量步），最后再解码答案。人读不到这些中间步，普通文本奖励也很难直接打分。LatentRM 因此再训一个潜空间奖励模型：对同一道题采多条轨迹，按分数挑一条，即 Best-of-N。
 
-本仓库提供：**原始基线**、**自家续训方法（p2mmd05）**，以及按同一协议评测的 **外部生成器（SLPO、CODI）** 和 **在 CODI 上再跑同一套续训（CODIp2）**。权重和完整采样 dump 需自备；数字摘要在 [`tables/`](tables/)。
+本仓库提供：**原始基线**、**自家最终系统（mmd_cold）**，以及按同一协议评测的 **外部生成器（SLPO、CODI）** 与跨底座迁移（**CODImmd**、**colar_mmd_cold**）。权重和完整采样 dump 需自备；数字摘要在 [`tables/`](tables/)。权威主表：[`tables/experiment_reports/paper_tables_mmd_cold/`](tables/experiment_reports/paper_tables_mmd_cold/)。
 
 > **先读这些再读数字表：**
 > 1. [`CLOSED_LOOP_STORY.md`](CLOSED_LOOP_STORY.md) — 论文 **Experiments** 体例草稿（协议 / 主表 / Takeaway / 限制；生成器×打分器闭环）。
@@ -31,13 +31,13 @@
 
 ## 0. 核心发现（一句话版）
 
-主线不是「单点涨分」，而是 **生成器 ↔ 打分器协同**：
+主线不是「单点涨分」，而是 **生成器 ↔ 打分器协同**（官方系统 = **mmd_cold**）：
 
-- **生成器（p2mmd05）拓宽探索**：Greedy 34.42 → 35.18（+0.76），Coverage@16 51.10 → 52.84（+1.74）。
-- **打分器（O2）变现探索**：同一批候选池上，O2 相对 B0 的优势在续训后从 +0.78 翻倍到 +1.57（3 seed 同向）。官方对比 LatentRM（B0）变现不了续训新探索出的正确轨迹，顺序偏好 O2 是必要补充。
-- **策略通用**：同一配方在更强的 CODI 底座上依然再 +1.06（CODIp2 40.03 → 42.00 的续训部分）。
+- **生成器（mmd_cold）拓宽探索**：COCONUT 上 B0 Top1 3-seed **35.03±0.20**（vs 冻 32.88 ≈+2.15）；O2 3-seed **36.32±0.40**。
+- **打分器（O2）变现**：正式 generate-once 同池（`scorer_axis_mmd_cold_samepool/`，mism=0）上 O2−B0 ≈ **+1.43pp**（B0 34.95±0.26 → O2 36.38±0.60）；O2≈SWIFT/HSRM（Top1）。
+- **策略迁移**：CODI **CODImmd** 41.32（vs 冻 O2 40.94 → **+0.38**）；CoLaR fixed_t **36.62 / 48.45 / 37.07**（vs 冻 fixed_t）。旧暖启 p2mmd05 / CODIp2 降为对照。
 
-严谨口径：只比**同池 O2−B0 gap**，不引用「B0 变现率下降」（那是跨口径混比；严格同池下 B0 变现率基本持平）。详见第 3.1 节与 [`tables/baseline_candidate_survey.md`](tables/baseline_candidate_survey.md)。
+严谨口径：只比**同池 O2−B0 gap**；详见 [`CLOSED_LOOP_STORY.md`](CLOSED_LOOP_STORY.md) 与 [`tables/experiment_reports/paper_tables_mmd_cold/MAIN_TABLES.md`](tables/experiment_reports/paper_tables_mmd_cold/MAIN_TABLES.md)。
 
 ---
 
@@ -48,11 +48,12 @@
 | 系统 | 生成器 | 奖励模型 | 说明 |
 |------|--------|----------|------|
 | **基线** | 冻住的 COCONUT | B0（交叉熵 / 官方对比 LatentRM） | 矩阵左上角 |
-| **方法 p2mmd05** | 续训后的 COCONUT | O2（顺序偏好） | 自家主系统 |
+| **方法 mmd_cold** | 冷启 dual_beat+SF-C+λ_MMD=0.05 | O2（顺序偏好） | **官方主系统** |
+| dualBeat | 同冷启、λ_MMD=0 | O2 / B0 | 消融基线 |
 | **SLPO+B0** | SLPO-COCONUT（关 gate、固定 T=6） | B0 | 生成器轴外基线 |
-| **CODI+B0** | 冻住的 CODI | B0 | 生成器轴外基线 |
 | **CODI+O2** | 冻住的 CODI | O2 | 隔离：只换打分器 |
-| **CODIp2+O2** | CODI 上跑同一套 p2 续训 | O2 | 策略接到 CODI |
+| **CODImmd+O2** | CODI 上同一最终配方 | O2 | 跨底座迁移 |
+| **colar_mmd_cold** | CoLaR fixed_t + λ_MMD=0.05 | Greedy/Cov/Maj | 非 GPT-2 第三底座 |
 
 B0 = 官方 LatentTTS 逐步对比 LatentRM。O2 = 本仓库的顺序偏好奖励模型（BCE + 层级偏好），**不是**官方 LatentRM。
 

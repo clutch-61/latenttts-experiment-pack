@@ -11,12 +11,12 @@
 
 ## 主线一句话
 
-两个贡献互为因果：
+两个贡献互为因果（**G-Ours = mmd_cold**）：
 
-- **贡献 1（生成器）**：p2 续训拓宽潜空间探索——Greedy +0.76、Coverage@16 +1.74，且在 CODI 强底座上依然 +1.06（通用，不是弱模型过拟合）。
-- **贡献 2（打分器）**：探索引发表征漂移，官方对比 LatentRM（B0）变现探索收益的能力相对不足；顺序偏好 O2 把同池 O2−B0 gap 从 +0.78 翻倍到 +1.57（3 seed 同向）。
+- **贡献 1（生成器）**：冷启 dual_beat+SF-C+λ_MMD=0.05 拓宽潜空间探索——COCONUT 上 B0 Top1 ≈+2.15、O2 ≈+2.6～+3.9；CODI **CODImmd +0.38**；CoLaR fixed_t 底座内大幅正 Δ。
+- **贡献 2（打分器）**：正式 mmd_cold generate-once 同池上 O2−B0 ≈ **+1.43pp**；O2≈SWIFT/HSRM（Top1 平手）。机制轴（order / `auc_cw`）仍支持 O2。
 
-严谨口径：只比**同池 O2−B0 gap**，不引用「B0 变现率下降」（跨口径混比；严格同池下 B0 变现率基本持平）。详见 README 第 0 / 3.1 节。
+严谨口径：只比**同池 O2−B0 gap**；旧 CODIp2=42.00 / 历史 p2 池已降级。详见 `CLOSED_LOOP_STORY.md`、`paper_tables_mmd_cold/`。
 
 ---
 
@@ -65,20 +65,19 @@
 | A (COCONUT) | 原版冻结 G0 | O2 | ✅ 冻 +O2 = 32.07 (GSM N16) |
 | A (COCONUT) | + **mmd_cold** | O2 | ✅ **36.01**（3-seed **36.32±0.40**；vs 冻 +3.94 / ~+2.6） |
 | B (CODI) | 原版冻结 | O2 | ✅ 40.94 |
-| B (CODI) | + CODIp2 | O2 | ✅ 42.00（+1.06，同池） |
-| C (CoLaR) | 原版冻结（官方 `###`+max_L=64） | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11 / Cov@64 77.79 / Maj@64 47.16 |
-| C (CoLaR) | + Colar-p2 v1（官方同协议） | 同协议 | ❌ 崩塌：Greedy 40.56→1.59 / Cov@16 64.97→7.51 |
-| C (CoLaR) | 冻结 fixed_t（T=16，无 `###`） | Greedy/Cov/Maj | ✅ 22.44 / 35.48 / 23.73（**与官方分表**） |
-| C (CoLaR) | + Colar-p2v2（fixed_t 自洽） | 同 fixed_t | ✅ **34.42 / 49.58 / 36.85**（底座内 +12.0 / +14.1 / +13.1） |
+| B (CODI) | + **CODImmd**（mmd_cold 配方） | O2 | ✅ **41.32**（+0.38；非逐条同池） |
+| C (CoLaR) | 原版冻结（官方 `###`+max_L=64） | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11（**与 fixed_t 分表**） |
+| C (CoLaR) | + Colar-p2 v1（官方同协议） | 同协议 | ❌ 崩塌（历史） |
+| C (CoLaR) | 冻结 fixed_t（T=16，无 `###`） | Greedy/Cov/Maj | ✅ 22.44 / 35.48 / 23.73 |
+| C (CoLaR) | + **colar_mmd_cold**（fixed_t+λ_MMD=0.05） | 同 fixed_t | ✅ **36.62 / 48.45 / 37.07** |
 
-详情与纪律：[`COLAR_ADAPTATION.md`](COLAR_ADAPTATION.md)。
+详情：`paper_codi_mmd_cold/`、`colar_mmd_cold/`、[`COLAR_ADAPTATION.md`](COLAR_ADAPTATION.md)。旧 CODIp2=42.00 / Colar-p2v2（λ=0）降为对照。
 
 **写作逻辑：**
-- CODI 原版显著高于 COCONUT → 归因底座压缩能力与自蒸馏初始化；
-- 重点：在 CODI 极强基线上，CODIp2 依然推高 Top1（40.94 → 42.00），证明 p2 是通用潜空间强化机制，非针对弱模型的过拟合。
-- CoLaR 提供 **非 GPT-2** 第三点：v1 证明「盲目移植会崩」；v2 在 **策略自洽 fixed_t** 下底座内正 Δ，**不可**与官方 40.56 混成同一 Δ，也**不可**写成已接 O2 的完整闭环。
+- CODI 冻显著高于 COCONUT → 归因底座；**CODImmd** 仍为正但幅度小于 COCONUT（强底座天花板）。
+- CoLaR：**fixed_t 自洽**下 mmd_cold 底座内正 Δ；**不可**与官方 `###` 绝对分混表，也**不可**写成已接 O2 的完整闭环。
 
-**跨池警告：** 底座 A 的冻 O2 与 p2mmd05+O2 的候选池 cov/maj 不等（新协议下 51.02/33.74 vs 52.99/36.32），方向稳但非严格同池，写作须标「同协议、seed 对齐，非逐条同池」。底座 B 侧 cov/maj 全等，干净。
+**跨池警告：** COCONUT / CODI 冻→训多为同协议非 hash 同池；打分器轴须用 generate-once（见主实验 3）。
 
 
 ---
@@ -105,13 +104,13 @@
 | 池 | B0 | O2 | SWIFT-Latent | HSRM-Latent |
 |----|----|----|--------------|-------------|
 | 冻 COCONUT | 32.72 ± 0.96 | **33.72 ± 1.03** | 33.69 ± 0.75 | 33.60 ± 0.75 |
-| p2mmd05 | 34.44 ± 0.38 | 35.92 ± 0.28 | 35.88 ± 0.48 | **36.06 ± 0.37** |
+| **mmd_cold**（`scorer_axis_mmd_cold_samepool/`，mism=0） | 34.95 ± 0.26 | **36.38 ± 0.60** | 36.16 ± 0.37 | 36.32 ± 0.63 |
 
-**核心结论 1（O2 vs B0，5-seed）：** 同池配对 top1：冻池 **+1.00pp [0.17, 1.85] 显著**；p2 池 **+1.49pp [0.59, 2.38] 显著**。O2 变现优势在续训后稳定放大，5 seed 后冻结池也显著。
+**核心结论 1（O2 vs B0）：** 冻池配对 **+1.00pp [0.17, 1.85]**；**mmd_cold 同池 mean ≈ +1.43pp**（5-seed）。无效目录 `scorer_axis_mmd_cold/`（分次 generate，mism≈1049）勿用。
 
-**核心结论 2（轻量 scorer vs B0）：** SWIFT/HSRM 同样可挑出正确轨迹，且在 p2 池上**比 B0 高 ~1.4–1.6pp**、在冻池高 ~0.9pp。→ 漂移后掉队的是 **B0**；轻量 scorer 与 O2 同档。
+**核心结论 2（轻量 scorer vs B0）：** SWIFT/HSRM 在 mmd_cold 池上同样明显高于 B0（~+1.2–1.4pp）；与 O2 同档。
 
-**核心结论 3（O2 vs SWIFT/HSRM，诚实阴性 + 机制轴优势，5-seed）：** top1 上 O2 **无优势**（冻/p2 配对 CI 全跨 0）；gate 消融亦无下游优势（5 seed，B0 尺 SWIFT−O2 **+0.36 ± 0.66**，方向混杂）。但 **`auc_cw`（正确-错误排序）** 上 O2 显著：冻 O2−SWIFT +2.34 [0.12, 4.57]；p2 O2−SWIFT +3.19 [0.89, 5.49]、O2−HSRM +2.70 [0.48, 4.92]。O2 的**机制轴**优势仍在**顺序/层级指标**：
+**核心结论 3（O2 vs SWIFT/HSRM，诚实阴性 + 机制轴）：** Top1 上 O2≈SWIFT/HSRM。机制轴（order / `auc_cw`，历史冻/p2 池诊断仍有效）上 O2 更高：
 
 | 模型 | order_pair_acc | hierarchy_consistency |
 |------|---------------:|----------------------:|

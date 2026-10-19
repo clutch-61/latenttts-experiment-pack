@@ -197,11 +197,11 @@ Teacher forcing 与推理的条件前缀不同。我们**不做** $\sum_t w_t\|\
 | 池 | B0 | O2 | SWIFT | HSRM |
 |------|---:|---:|------:|-----:|
 | 冻结 | $32.72\pm0.96$ | $\mathbf{33.72\pm1.03}$ | $33.69\pm0.75$ | $33.60\pm0.75$ |
-| p2 | $34.44\pm0.38$ | $35.92\pm0.28$ | $35.88\pm0.48$ | $\mathbf{36.06\pm0.37}$ |
+| **mmd_cold**（generate-once 同池） | $34.95\pm0.26$ | $\mathbf{36.38\pm0.60}$ | $36.16\pm0.37$ | $36.32\pm0.63$ |
 
-配对 O2$-$B0：**$+1.00$** [$0.17,1.85$]（冻）；**$+1.49$** [$0.59,2.38$]（p2）。O2 vs SWIFT/HSRM 的 Top-1 CI 跨 0。
+配对 O2$-$B0：**$+1.00$** [$0.17,1.85$]（冻）；mmd_cold 池 mean **$\approx{+}1.43$**（5-seed，sha 对齐）。O2 vs SWIFT/HSRM 的 Top-1 仍接近。
 
-**顺序与排序。** Full O2 相对 SWIFT 的 $\mathrm{auc}_{cw}$ 约 +$3.3$ / $+2.8$ pp（冻 / p2）。Order-Decision 与层级指标上 O2 远高于纯 outcome 的 SWIFT/HSRM。救援不对称：p2 池上偏向 O2 相对 **B0**；相对 SWIFT/HSRM 大致对称。O2 与极小 SWIFT/HSRM 头容量不对齐——Top-1 打平不能当架构优劣判决。
+**顺序与排序。** Full O2 相对 SWIFT 的 $\mathrm{auc}_{cw}$ 约 +$3.3$ / $+2.8$ pp（冻 / 历史 p2 池）。Order-Decision 与层级指标上 O2 远高于纯 outcome 的 SWIFT/HSRM。O2 与极小 SWIFT/HSRM 头容量不对齐——Top-1 打平不能当架构优劣判决。
 
 **输入探针。** Latent-only O2 的 Top-1 仍接近 full O2 / SWIFT，但 $\mathrm{auc}_{cw}$ 落到 SWIFT 一带。读法：保留层级偏好，改进文本与 latent 如何共同喂给 $s_\phi$，并校准选择——而不是丢掉模块一。
 
@@ -219,13 +219,13 @@ Teacher forcing 与推理的条件前缀不同。我们**不做** $\sum_t w_t\|\
 
 系统锁 GSM N16 **O2** 3-seed：**$36.32\pm0.40$**（vs dualBeat $35.81$；旧 p2mmd05 $35.48$）。权威表：`paper_tables_mmd_cold/`。
 
-**迁移。** CODI 冻结 $40.94$ $\rightarrow$ CODIp2 $42.00$（**$+1.06$**，同池，O2 Top-1；未因换锁重跑）。
+**迁移。** CODI 冻结 $40.94$ $\rightarrow$ **CODImmd** $41.32$（**$+0.38$**，同协议 s42，非逐条同池）。CoLaR fixed_t：冻 Greedy/Cov16/Maj $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$。
 
-同预算短训 RL 未超过冻结；mmd_cold / p2 超过。这不是官方全预算 RL 复现（约 $4$–$5\times 10^4$ 步）。
+同预算短训 RL 未超过冻结；mmd_cold 超过。这不是官方全预算 RL 复现（约 $4$–$5\times 10^4$ 步）。
 
 ### 5.3 模块二 / 三现状
 
-**mmd_cold** 内的 content-view MMD 是当前已跑通且略优于无 MMD（dualBeat）的集合对齐路径；暖启 p2mmd05 不作为成功故事。干净的 Chamfer vs MMD 对比，以及可反传的 rollout 课程，仍按 staged 后续（附录）。非 GPT-2 移植未稳、缺 SFT/RFT 对照等，一并延期并写明非声明。
+**mmd_cold** 内的 content-view MMD 是当前已跑通且略优于无 MMD（dualBeat）的集合对齐路径；暖启 p2mmd05 / 旧 CODIp2 降为对照。干净的 Chamfer vs MMD 烘培、SFT/RFT 对照仍按 staged 后续（附录）。
 
 ---
 

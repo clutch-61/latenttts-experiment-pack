@@ -159,7 +159,7 @@ Teacher forcing 与推理的条件前缀不同。我们**不做** $\sum_t w_t\|\
 
 ### 3.5 复用顺序感知 scorer 的生成器续训（p2）
 
-固定或周期性刷新 $s_\phi$ 后，每步采样 $k$ 条学生轨迹与 1 条 teacher 轨迹，用 O2 打分（B0 作健康约束），选 CE 目标，经 SF-C 更新生成器。可选 content-view MMD 在该循环内实现模块二。发布配方 **p2mmd05** 在已验证系数下打开 MMD。测试时 BoN 使用同一 $s_\phi$——探索与变现共享 scorer。
+固定或周期性刷新 $s_\phi$ 后，每步采样 $k$ 条学生轨迹与 1 条 teacher 轨迹，用 O2 打分（B0 作健康约束），选 CE 目标，经 SF-C 更新生成器。可选 content-view MMD 在该循环内实现模块二。官方发布配方 **mmd_cold**（椰子冷启 + dual_beat + SF-C + $\lambda_{\mathrm{MMD}}{=}0.05$，1500 step；锁 `outputs/p123_mmd_cold`）。旧暖启 **p2mmd05** 降为对照。测试时 BoN 使用同一 $s_\phi$——探索与变现共享 scorer。
 
 ### 3.6 每项「刻意不做」什么
 
@@ -197,32 +197,35 @@ Teacher forcing 与推理的条件前缀不同。我们**不做** $\sum_t w_t\|\
 | 池 | B0 | O2 | SWIFT | HSRM |
 |------|---:|---:|------:|-----:|
 | 冻结 | $32.72\pm0.96$ | $\mathbf{33.72\pm1.03}$ | $33.69\pm0.75$ | $33.60\pm0.75$ |
-| p2 | $34.44\pm0.38$ | $35.92\pm0.28$ | $35.88\pm0.48$ | $\mathbf{36.06\pm0.37}$ |
+| **mmd_cold**（generate-once 同池） | $34.95\pm0.26$ | $\mathbf{36.38\pm0.60}$ | $36.16\pm0.37$ | $36.32\pm0.63$ |
 
-配对 O2$-$B0：**$+1.00$** [$0.17,1.85$]（冻）；**$+1.49$** [$0.59,2.38$]（p2）。O2 vs SWIFT/HSRM 的 Top-1 CI 跨 0。
+配对 O2$-$B0：**$+1.00$** [$0.17,1.85$]（冻）；mmd_cold 池 mean **$\approx{+}1.43$**（5-seed，sha 对齐）。O2 vs SWIFT/HSRM 的 Top-1 仍接近。
 
-**顺序与排序。** Full O2 相对 SWIFT 的 $\mathrm{auc}_{cw}$ 约 +$3.3$ / $+2.8$ pp（冻 / p2）。Order-Decision 与层级指标上 O2 远高于纯 outcome 的 SWIFT/HSRM。救援不对称：p2 池上偏向 O2 相对 **B0**；相对 SWIFT/HSRM 大致对称。O2 与极小 SWIFT/HSRM 头容量不对齐——Top-1 打平不能当架构优劣判决。
+**顺序与排序。** Full O2 相对 SWIFT 的 $\mathrm{auc}_{cw}$ 约 +$3.3$ / $+2.8$ pp（冻 / 历史 p2 池）。Order-Decision 与层级指标上 O2 远高于纯 outcome 的 SWIFT/HSRM。O2 与极小 SWIFT/HSRM 头容量不对齐——Top-1 打平不能当架构优劣判决。
 
 **输入探针。** Latent-only O2 的 Top-1 仍接近 full O2 / SWIFT，但 $\mathrm{auc}_{cw}$ 落到 SWIFT 一带。读法：保留层级偏好，改进文本与 latent 如何共同喂给 $s_\phi$，并校准选择——而不是丢掉模块一。
 
 ### 5.2 在生成器续训中复用模块一（p2）
 
-**设置。** COCONUT-GPT2；冻结 / SLPO / Dropout-GRPO / p2mmd05；同 **3000** 步；评测只用 **B0**。
+**设置。** COCONUT-GPT2；冻结 / SLPO / Dropout-GRPO / **mmd_cold**；RL 对照同 **3000** 步；评测只用 **B0**（生成器轴）。系统尺另报 O2（见 `paper_mmd_cold/LOCK.md`）。
 
 | 方法 | Cov@16 | B0 Top-1 | $\Delta$ |
 |--------|-------:|---------:|---------:|
 | 冻结 | 50.67 | 32.88 | — |
 | SLPO (3000) | 50.90 | 32.88 | $+0.00$ |
 | Dropout-GRPO (3000) | 51.23 | 32.85 | $-0.03$ |
-| **p2mmd05** | **53.88** | **34.32** | **$+1.44$** |
+| dualBeat（−MMD） | 53.60 | $34.12\pm0.55$ | $+1.24$ |
+| **mmd_cold** | **54.03** | **$35.03\pm0.20$** | **$+2.15$** |
 
-**迁移。** CODI 冻结 $40.94$ $\rightarrow$ CODIp2 $42.00$（**$+1.06$**，同池，O2 Top-1）。
+系统锁 GSM N16 **O2** 3-seed：**$36.32\pm0.40$**（vs dualBeat $35.81$；旧 p2mmd05 $35.48$）。权威表：`paper_tables_mmd_cold/`。
 
-同预算短训 RL 未超过冻结；p2 超过。这不是官方全预算 RL 复现（约 $4$–$5\times 10^4$ 步）。
+**迁移。** CODI 冻结 $40.94$ $\rightarrow$ **CODImmd** $41.32$（**$+0.38$**，同协议 s42，非逐条同池）。CoLaR fixed_t：冻 Greedy/Cov16/Maj $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$。
+
+同预算短训 RL 未超过冻结；mmd_cold 超过。这不是官方全预算 RL 复现（约 $4$–$5\times 10^4$ 步）。
 
 ### 5.3 模块二 / 三现状
 
-p2mmd05 内的 content-view MMD 是当前已跑通的集合对齐路径；干净的 Chamfer vs MMD 对比，以及可反传的 rollout 课程，仍按 staged 后续（附录）。非 GPT-2 移植未稳、缺 SFT/RFT 对照等，一并延期并写明非声明。
+**mmd_cold** 内的 content-view MMD 是当前已跑通且略优于无 MMD（dualBeat）的集合对齐路径；暖启 p2mmd05 / 旧 CODIp2 降为对照。干净的 Chamfer vs MMD 烘培、SFT/RFT 对照仍按 staged 后续（附录）。
 
 ---
 

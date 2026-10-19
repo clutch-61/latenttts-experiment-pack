@@ -1,9 +1,9 @@
 # 主实验表（官方系统 = mmd_cold）
 
-生成 stamp=`20261019_005300`。协议：dropout=None，`claim_agg=top1`，`score_reduce=sum_logit`，T=6。
+生成 stamp=`20261019_195500`（含 CODI/CoLaR/同池 scorer 重跑）。协议：dropout=None，`claim_agg=top1`，`score_reduce=sum_logit`，T=6。
 
 **官方生成器：** `outputs/p123_mmd_cold/model`（椰子冷启 + dual_beat + SF-C + λ_MMD=0.05，1500 step）。
-**消融基线：** dualBeat（λ_MMD=0，同冷启同预算）。**降级对照：** 暖启 p2mmd05。
+**消融基线：** dualBeat（λ_MMD=0）。**跨底座：** `outputs/p123_codi_mmd_cold`、`outputs/colar_mmd_cold`。
 
 ## 主实验 1 — 生成器策略（固定 COCONUT；B0 尺）
 
@@ -59,23 +59,27 @@ seed=42。单元格 = Top1 / Cov。
 | **mmd_cold** | **36.32±0.40** | [36.01, 36.77, 36.16] | 53.45 |
 | p2mmd05 | 35.48±0.65 | [34.8, 36.09, 35.56] | 53.42 |
 
-## 主实验 2 — 跨底座（O2；底座内 Δ）
+## 主实验 2 — 跨底座（底座内 Δ）
 
-| Base | Policy | O2 Top1 | Δ |
-|------|--------|--------:|--:|
-| COCONUT | Frozen | 32.07 | — |
-| COCONUT | **mmd_cold** | **36.01**（3-seed 36.32±0.40） | +3.94 / ~+2.6 |
-| CODI | Frozen | 40.94 | — |
-| CODI | CODIp2 | 42.00 | +1.06（同池；未因换锁重跑） |
+| Base | Policy | 主指标 | Δ |
+|------|--------|-------:|--:|
+| COCONUT | Frozen | O2 32.07 | — |
+| COCONUT | **mmd_cold** | O2 **36.01**（3-seed **36.32±0.40**） | +3.94 / ~+2.6 |
+| CODI | Frozen | O2 40.94 | — |
+| CODI | **CODImmd** | O2 **41.32**（B0 40.11） | **+0.38**† |
+| CoLaR fixed_t | Frozen | Greedy 22.44 / Cov16 35.48 / Maj 23.73 | — |
+| CoLaR fixed_t | **colar_mmd_cold** | **36.62 / 48.45 / 37.07** | +14.2 / +13.0 / +13.3 |
 
-## 主实验 3 — 同池打分器（历史 p2 dump；系统锁已换）
+†同协议 s42；cov 非逐条同池。旧 CODIp2=42.00 降级。明细：`p123/paper_codi_mmd_cold/`、`colar_mmd_cold/`。
 
-候选池 dump 仍为历史 `p2mmd05`（未因换锁重采样）。机制结论不变。系统尺见上表。
+## 主实验 3 — 同池打分器（正式 mmd_cold 池）
+
+`scorer_axis_mmd_cold_samepool/`（generate-once；`answers_sha1` mism=0；seeds 42–46）。
 
 | Pool | B0 | O2 | SWIFT | HSRM |
 |------|---:|---:|------:|-----:|
 | Frozen COCONUT | 32.72±0.96 | **33.72±1.03** | 33.69±0.75 | 33.60±0.75 |
-| p2 池（历史 dump） | 34.44±0.38 | 35.92±0.28 | 35.88±0.48 | **36.06±0.37** |
+| **mmd_cold** | 34.95±0.26 | **36.38±0.60** | 36.16±0.37 | 36.32±0.63 |
 
-配对 O2−B0：冻 +1.00 [0.17,1.85]；p2 +1.49 [0.59,2.38]。
+配对 O2−B0：冻 +1.00 [0.17,1.85]；mmd_cold 池 mean **≈+1.43pp**。O2≈SWIFT/HSRM（Top1 平手区）。
 
