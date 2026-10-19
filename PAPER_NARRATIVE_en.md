@@ -217,7 +217,7 @@ Paired O2$-$B0: **$+1.00$** [$0.17,1.85$] (frozen); mmd_cold pool mean **$\appro
 
 System lock GSM N16 **O2** 3-seed: **$36.32\pm0.40$** (vs dualBeat $35.81$; legacy p2mmd05 $35.48$). Canonical tables: `paper_tables_mmd_cold/`.
 
-**Transfer.** CODI frozen $40.94$ $\rightarrow$ **CODImmd** $41.32$ (**$+0.38$**, matched protocol s42, not hash-identical pools). CoLaR fixed_t: frozen Greedy/Cov16/Maj $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$.
+**Transfer.** CODI fair 3-seed (generate-once within-pool mism=0; zero-shot COCONUT RMs): frozen O2 $41.14{\pm}0.35$ $\rightarrow$ **CODImmd** $42.13{\pm}0.84$ (**$+0.99$**); N1 $42.08{\rightarrow}43.29$ (**$+1.21$**). CoLaR fixed_t: frozen $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$.
 
 Matched short-budget RL does not beat frozen; mmd_cold does. This is not a full-budget official RL claim ($\sim 4$–$5\times 10^4$ steps).
 

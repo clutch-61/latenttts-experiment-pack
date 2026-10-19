@@ -64,8 +64,8 @@
 |------|----------|------|------|
 | A (COCONUT) | 原版冻结 G0 | O2 | ✅ 冻 +O2 = 32.07 (GSM N16) |
 | A (COCONUT) | + **mmd_cold** | O2 | ✅ **36.01**（3-seed **36.32±0.40**；vs 冻 +3.94 / ~+2.6） |
-| B (CODI) | 原版冻结 | O2 | ✅ 40.94 |
-| B (CODI) | + **CODImmd**（mmd_cold 配方） | O2 | ✅ **41.32**（+0.38；非逐条同池） |
+| B (CODI) | 原版冻结 | O2 / N1 | ✅ O2 41.14±0.35 / N1 42.08（`codi_samepool_fair`） |
+| B (CODI) | + **CODImmd** | O2 / N1 | ✅ O2 **42.13±0.84** / N1 **43.29**（+0.99 / +1.21） |
 | C (CoLaR) | 原版冻结（官方 `###`+max_L=64） | Greedy/Cov/Maj | ✅ Greedy 40.56 / Cov@16 64.97 / Maj@16 45.11（**与 fixed_t 分表**） |
 | C (CoLaR) | + Colar-p2 v1（官方同协议） | 同协议 | ❌ 崩塌（历史） |
 | C (CoLaR) | 冻结 fixed_t（T=16，无 `###`） | Greedy/Cov/Maj | ✅ 22.44 / 35.48 / 23.73 |
@@ -74,7 +74,7 @@
 详情：`paper_codi_mmd_cold/`、`colar_mmd_cold/`、[`COLAR_ADAPTATION.md`](COLAR_ADAPTATION.md)。旧 CODIp2=42.00 / Colar-p2v2（λ=0）降为对照。
 
 **写作逻辑：**
-- CODI 冻显著高于 COCONUT → 归因底座；**CODImmd** 仍为正但幅度小于 COCONUT（强底座天花板）。
+- CODI 冻显著高于 COCONUT → 归因底座；**CODImmd** fair 3-seed O2 ≈+1pp / N1 +1.2（零样本 RM；Cov 略降）。
 - CoLaR：**fixed_t 自洽**下 mmd_cold 底座内正 Δ；**不可**与官方 `###` 绝对分混表，也**不可**写成已接 O2 的完整闭环。
 
 **跨池警告：** COCONUT / CODI 冻→训多为同协议非 hash 同池；打分器轴须用 generate-once（见主实验 3）。

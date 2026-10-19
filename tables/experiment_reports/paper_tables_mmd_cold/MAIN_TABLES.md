@@ -65,12 +65,12 @@ seed=42。单元格 = Top1 / Cov。
 |------|--------|-------:|--:|
 | COCONUT | Frozen | O2 32.07 | — |
 | COCONUT | **mmd_cold** | O2 **36.01**（3-seed **36.32±0.40**） | +3.94 / ~+2.6 |
-| CODI | Frozen | O2 40.94 | — |
-| CODI | **CODImmd** | O2 **41.32**（B0 40.11） | **+0.38**† |
+| CODI | Frozen | O2 41.14±0.35（N1 42.08） | — |
+| CODI | **CODImmd** | O2 **42.13±0.84**（N1 **43.29**） | O2 **+0.99** / N1 **+1.21**† |
 | CoLaR fixed_t | Frozen | Greedy 22.44 / Cov16 35.48 / Maj 23.73 | — |
 | CoLaR fixed_t | **colar_mmd_cold** | **36.62 / 48.45 / 37.07** | +14.2 / +13.0 / +13.3 |
 
-†同协议 s42；cov 非逐条同池。旧 CODIp2=42.00 降级。明细：`p123/paper_codi_mmd_cold/`、`colar_mmd_cold/`。
+†`codi_samepool_fair/` generate-once B0+O2，3-seed；零样本 COCONUT RM。池内 O2−B0：冻 +1.31 / mmd +1.87。旧单点 +0.38 / CODIp2=42.00 降级。
 
 ## 主实验 3 — 同池打分器（正式 mmd_cold 池）
 

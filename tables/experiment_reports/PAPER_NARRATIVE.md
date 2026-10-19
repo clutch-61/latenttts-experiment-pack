@@ -219,7 +219,7 @@ Teacher forcing 与推理的条件前缀不同。我们**不做** $\sum_t w_t\|\
 
 系统锁 GSM N16 **O2** 3-seed：**$36.32\pm0.40$**（vs dualBeat $35.81$；旧 p2mmd05 $35.48$）。权威表：`paper_tables_mmd_cold/`。
 
-**迁移。** CODI 冻结 $40.94$ $\rightarrow$ **CODImmd** $41.32$（**$+0.38$**，同协议 s42，非逐条同池）。CoLaR fixed_t：冻 Greedy/Cov16/Maj $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$。
+**迁移。** CODI fair 3-seed（generate-once 池内 mism=0；零样本 RM）：冻 O2 $41.14{\pm}0.35$ $\rightarrow$ **CODImmd** $42.13{\pm}0.84$（**$+0.99$**）；N1 $42.08{\rightarrow}43.29$（**$+1.21$**）。CoLaR fixed_t：冻 $22.44/35.48/23.73$ $\rightarrow$ **colar_mmd_cold** $36.62/48.45/37.07$。
 
 同预算短训 RL 未超过冻结；mmd_cold 超过。这不是官方全预算 RL 复现（约 $4$–$5\times 10^4$ 步）。
 

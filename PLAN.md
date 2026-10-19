@@ -2929,3 +2929,27 @@ dualBeat 35.81±0.46 | **mmd_cold 36.32±0.40（+0.51）** | p2mmd05 35.48±0.65
 **Hold：** G1 SFT / G2 RFT、Chamfer bake-off、全预算 SLPO/GRPO。  
 **Next：** 推 GitHub pack（meta/TSV/叙事，不推全量 dump）。
 
+### CODI 公平重采：matched-protocol samepool（2026-10-19 20:05）
+
+**问题：** 旧 CODImmd +0.38 用 10/06 冻 dump vs 10/19 训 dump，cov 53.37≠54.66；非协议对齐。
+
+**跑法：** `scripts/run_codi_samepool_fair.sh`
+- 池 `codi_frozen`=`checkpoints/codi`，`codi_mmd`=`outputs/p123_codi_mmd_cold/model`
+- 各池 `infer_same_pool_multi_scorer.py --generator_type=codi --scorers=B0,O2`，N16 seeds 42–44
+- 另 N1 greedy（无 RM）两生成器
+- 输出 `results/full/codi_samepool_fair/`；跨生成器**不**要求 hash 同池；脚注零样本 RM
+
+**GPU：** 0=frozen 流，2=mmd 流，3=N1。齐后替换 CLOSED_LOOP / MAIN 跨底座 CODI 行。
+
+### CODI fair 齐套读数（2026-10-19 20:20）
+
+| 尺 | Frozen | CODImmd | Δ |
+|----|-------:|--------:|--:|
+| N1 Pass@1 | 42.08 | **43.29** | **+1.21** |
+| O2 N16 3-seed | 41.14±0.35 | **42.13±0.84** | **+0.99** |
+| B0 N16 3-seed | 39.83±0.23 | 40.26±0.84 | +0.43 |
+| 池内 O2−B0 | +1.31 | +1.87 | — |
+| Cov@16 | 54.79 | 53.30 | −1.49 |
+
+s42 与旧单点一致（+0.38）；3-seed 抬到 ~+1pp。文档已改用 fair 表。脚本 `rg` 在 `set -e` 下已修。
+

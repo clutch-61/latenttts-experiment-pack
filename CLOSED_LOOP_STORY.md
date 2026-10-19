@@ -39,14 +39,14 @@
 |------|--------|-------:|----------------:|
 | COCONUT | Frozen | O2 Top1 32.07 | — |
 | COCONUT | **mmd_cold** | O2 **36.01**（3-seed **36.32±0.40**） | **+3.94**（s42；3-seed vs 冻≈+2.6） |
-| CODI | Frozen | O2 40.94 | — |
-| CODI | **CODImmd**（同最终配方） | O2 **41.32** | **+0.38**† |
+| CODI | Frozen | O2 41.14±0.35（N1 42.08） | — |
+| CODI | **CODImmd** | O2 **42.13±0.84**（N1 **43.29**） | O2 **+0.99** / N1 **+1.21**† |
 | CoLaR fixed_t | Frozen | Greedy 22.44 / Cov@16 35.48 / Maj 23.73 | — |
 | CoLaR fixed_t | **colar_mmd_cold**（answer_beat+SF-C+λ_MMD=0.05） | Greedy **36.62** / Cov@16 **48.45** / Maj **37.07** | **+14.2 / +13.0 / +13.3** |
 
-†相对冻 CODI 同协议 s42；cov 53.37 vs 冻 54.66，**非逐条同池**（方向正、幅度小于旧暖启 CODIp2 的 +1.06）。旧 CODIp2=42.00 降为历史对照。COCONUT/CODI 锁：`paper_mmd_cold/`、`paper_codi_mmd_cold/`；CoLaR：`results/full/colar_mmd_cold/`。
+†`codi_samepool_fair/`：两生成器各 generate-once B0+O2（mism=0），seeds 42–44；B0/O2 为零样本 COCONUT RM。池内 O2−B0：冻 +1.31 / CODImmd +1.87。Cov 略降（54.79→53.30），N1/Maj/O2 同向正。旧单点 s42 +0.38 与本表 s42 一致。CoLaR：`colar_mmd_cold/`。
 
-**Takeaway.** 最终配方在 COCONUT 上增益最大；在更强 CODI 上仍为正但幅度变小；在非 GPT-2 的 CoLaR fixed_t 上底座内大幅正 Δ（相对 fixed_t 冻，不可与官方 `###` 协议混表）。
+**Takeaway.** 最终配方在 COCONUT 上增益最大；CODI 上 3-seed O2 约 +1pp、N1 +1.2（零样本 RM）；CoLaR fixed_t 底座内大幅正 Δ（不可与官方 `###` 混表）。
 
 ---
 
@@ -87,7 +87,7 @@
 
 - CoLaR 正结果仅在 **fixed_t 自洽协议**下相对该协议冻结；不可与官方 `###`+max_L 绝对分混表。  
 - 4.1 的 RL 对照为同 3000-step 设定，非官方全预算复现。  
-- CODI 冻→CODImmd 为同协议 s42、**非逐条同池**；幅度小于历史 CODIp2。  
+- CODI：matched-protocol 3-seed；跨生成器非 hash 同池；RM 为零样本。  
 - 不得用跨底座绝对 Acc 差论证策略收益；不得写「O2 Top-1 全面优于 SWIFT/HSRM」。
 
 
@@ -98,7 +98,7 @@
 | 板块 | 主 claim 是否够写 | 状态 |
 |------|:--:|------|
 | 4.1 生成器策略（COCONUT） | ✅ | mmd_cold 3-seed B0 齐；G1 SFT / G2 RFT **缺** |
-| 4.2 跨底座 | ✅ | CODI **CODImmd +0.38**；CoLaR fixed_t **mmd_cold 正 Δ** |
+| 4.2 跨底座 | ✅ | CODI fair 3-seed O2 **+0.99** / N1 **+1.21**；CoLaR fixed_t 正 Δ |
 | 4.3 打分器同池 | ✅ | `scorer_axis_mmd_cold_samepool/` mism=0；5-seed |
 | 方法消融 | ✅ | Full=mmd_cold；nogate −4.2；−MMD −0.51 |
 | 全预算 SLPO/GRPO、SFT/RFT | ❌ | 非本轮阻塞项 |
